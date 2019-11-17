@@ -1,5 +1,3 @@
-using System;
-
 namespace MyPortfolio.Models
 {
     public class ErrorViewModel
