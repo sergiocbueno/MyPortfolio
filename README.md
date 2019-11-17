@@ -28,7 +28,9 @@ It was deployed into Heroku server. Check it out at https://sergiobuenoportfolio
 3. docker build -t <image-name> <path-where-application-was-published-within-dockerfile-inside>
 4. docker tag <image-name-created-in-previous-step> registry.heroku.com/<heroku-app-name>/web
 5. docker push registry.heroku.com/<heroku-app-name>/web
-heroku container:release web --app <heroku-app-name>
+6. heroku container:release web --app <heroku-app-name>
+
+---
 
 ## Re-deploy into Heroku server
 
