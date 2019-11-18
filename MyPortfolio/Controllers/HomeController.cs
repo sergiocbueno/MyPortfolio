@@ -6,12 +6,22 @@ namespace MyPortfolio.Controllers
 {
     public class HomeController : Controller
     {
-        public IActionResult Index()
+        public IActionResult About()
         {
             return View();
         }
 
-        public IActionResult Privacy()
+        public IActionResult Education()
+        {
+            return View();
+        }
+
+        public IActionResult Experience()
+        {
+            return View();
+        }
+
+        public IActionResult Skills()
         {
             return View();
         }
