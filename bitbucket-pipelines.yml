@@ -1,0 +1,11 @@
+image: microsoft/dotnet:sdk
+
+pipelines:
+  branches:
+    '{test_coverage}':
+                - step:
+                    name: Restore packages, Build and Run Tests
+                    script:
+                        - dotnet restore
+                        - dotnet build
+                        - dotnet test
