@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29001.49
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyPortfolio", "MyPortfolio\MyPortfolio.csproj", "{688DFB43-859A-486E-969B-524866B73559}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyPortfolio", "MyPortfolio\MyPortfolio.csproj", "{688DFB43-859A-486E-969B-524866B73559}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestCoverage", "TestCoverage\TestCoverage.csproj", "{F0595A85-3405-4FB0-B69F-96D1645D3CFF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{688DFB43-859A-486E-969B-524866B73559}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{688DFB43-859A-486E-969B-524866B73559}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{688DFB43-859A-486E-969B-524866B73559}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F0595A85-3405-4FB0-B69F-96D1645D3CFF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F0595A85-3405-4FB0-B69F-96D1645D3CFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F0595A85-3405-4FB0-B69F-96D1645D3CFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F0595A85-3405-4FB0-B69F-96D1645D3CFF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
