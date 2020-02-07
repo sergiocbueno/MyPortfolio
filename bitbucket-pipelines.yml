@@ -3,7 +3,17 @@ image: microsoft/dotnet:2.2-sdk
 pipelines:
   default:
     - step:
-        name: Restore and Build
+        name: 
+            Restore Solution
         script: 
-          - dotnet restore
-          - dotnet build
+            - dotnet restore
+    - step:
+        name:
+            Build Solution
+        script:
+            - dotnet build
+    - step:
+        name:
+            Execute Tests
+        script:
+            - dotnet test
