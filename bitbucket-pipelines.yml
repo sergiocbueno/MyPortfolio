@@ -3,6 +3,8 @@ image: microsoft/dotnet:2.2-sdk
 pipelines:
   default:
     - step:
+        caches:
+            - dotnetcore
         name: 
             Restore Solution
         script: 
