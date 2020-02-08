@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using MyPortfolio.Models;
 using MyPortfolio.Services.MapUserService;
 
@@ -13,13 +14,18 @@ namespace MyPortfolio.Controllers
         private readonly IHttpContextAccessor _accessor;
         private readonly IHostingEnvironment _hostingEnvironment;
         private readonly IMapUserService _mapUserService;
+        private readonly IConfiguration _configuration;
         private const string _endOfGeoLocationDBPath = "\\GeoLocationDB\\GeoLite2-City.mmdb";
 
-        public HomeController(IHttpContextAccessor accessor, IHostingEnvironment hostingEnvironment, IMapUserService mapUserService)
+        public HomeController(IHttpContextAccessor accessor, 
+            IHostingEnvironment hostingEnvironment, 
+            IMapUserService mapUserService,
+            IConfiguration configuration)
         {
             _accessor = accessor;
             _hostingEnvironment = hostingEnvironment;
             _mapUserService = mapUserService;
+            _configuration = configuration;
         }
 
         public IActionResult About()
@@ -43,6 +49,12 @@ namespace MyPortfolio.Controllers
 
         public IActionResult Skills()
         {
+            return View();
+        }
+
+        public IActionResult MappingAccess()
+        {
+            ViewData["GoogleApiKey"] = _configuration.GetConnectionString("GoogleApiKey");
             return View();
         }
 

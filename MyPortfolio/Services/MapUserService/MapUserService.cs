@@ -1,7 +1,5 @@
 ﻿using MaxMind.GeoIP2;
-using System;
 using System.Net;
-using System.Threading;
 
 namespace MyPortfolio.Services.MapUserService
 {
