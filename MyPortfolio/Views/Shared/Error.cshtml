@@ -3,12 +3,16 @@
     ViewData["Title"] = "Error";
 }
 
-<h1 class="text-danger">Error.</h1>
-<h2 class="text-danger">An error occurred while processing your request.</h2>
-
-@if (Model.ShowRequestId)
-{
-    <p>
-        <strong>Request ID:</strong> <code>@Model.RequestId</code>
-    </p>
-}
+<section class="resume-section p-3 p-lg-5 d-flex d-column">
+    <div class="my-auto">
+        <h1 class="mb-0">
+            <span class="text-primary">Error</span>
+        </h1>
+        <div class="subheading mb-5">
+            Sorry an error occurred! We are trying to solve it as soon as possible, please try again later!
+        </div>
+        <div class="subheading mb-5">
+            <img src="~/img/error-occurred.gif" alt="Ops!">
+        </div>
+    </div>
+</section>
