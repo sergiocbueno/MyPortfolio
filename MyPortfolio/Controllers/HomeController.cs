@@ -55,8 +55,12 @@ namespace MyPortfolio.Controllers
         public IActionResult MappingAccess()
         {
             ViewData["GoogleApiKey"] = _configuration.GetConnectionString("GoogleApiKey");
-            //TODO: Getal cities and send to js via viewmodel
-            return View();
+
+            var ipAddress = _accessor.HttpContext.Connection.RemoteIpAddress;
+            var geoLocationDBPath = _hostingEnvironment.ContentRootPath + _endOfGeoLocationDBPath;
+            var accessMapViewModel = _mapUserService.FindUserInsideMap(ipAddress, geoLocationDBPath);
+
+            return View(accessMapViewModel);
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

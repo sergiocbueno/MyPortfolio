@@ -1,15 +1,20 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using PostgreSQLIntegration.Context;
+using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 
 namespace MyPortfolio.Database.Repositories
 {
     public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : class
     {
-        private readonly IServiceScopeFactory _scopeFactory;
+        protected PostgreSQLContext _postgreSQLContext;
+        private IServiceScopeFactory _scopeFactory;
 
-        public BaseRepository(IServiceScopeFactory scopeFactory)
+        public BaseRepository(PostgreSQLContext postgreSQLContext, IServiceScopeFactory scopeFactory)
         {
+            _postgreSQLContext = postgreSQLContext;
             _scopeFactory = scopeFactory;
         }
 
@@ -17,23 +22,30 @@ namespace MyPortfolio.Database.Repositories
         {
         }
 
-        public TEntity GetById(int id)
+        public IList<TEntity> GetByExpressionMultiThread(Expression<Func<TEntity, bool>> @where)
         {
             using (var scope = _scopeFactory.CreateScope())
             {
                 var dbContext = scope.ServiceProvider.GetRequiredService<PostgreSQLContext>();
-                dbContext.Set<TEntity>().AsQueryable();
-                return dbContext.Set<TEntity>().Find(id);
+                return dbContext.Set<TEntity>().AsQueryable().Where(where).ToList();
             }
         }
 
-        public IQueryable<TEntity> GetAll()
+        public void SaveMultiThreadIncludingSaveContext(TEntity entity)
         {
+            if (entity == null) throw new ArgumentNullException(nameof(entity));
+
             using (var scope = _scopeFactory.CreateScope())
             {
                 var dbContext = scope.ServiceProvider.GetRequiredService<PostgreSQLContext>();
-                return dbContext.Set<TEntity>().AsQueryable();
+                dbContext.Set<TEntity>().Add(entity);
+                dbContext.SaveChanges();
             }
+        }
+
+        public IQueryable<TEntity> GetAllSingleThread()
+        {
+            return _postgreSQLContext.Set<TEntity>().AsQueryable();
         }
     }
 }
