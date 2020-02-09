@@ -32,7 +32,8 @@ namespace MyPortfolio.Controllers
         {
             var ipAddress = _accessor.HttpContext.Connection.RemoteIpAddress;
             var geoLocationDBPath = _hostingEnvironment.ContentRootPath + _endOfGeoLocationDBPath;
-            _ = Task.Run(() => _mapUserService.GetUserLocationByIpAddress(ipAddress, geoLocationDBPath));
+            //_ = Task.Run(() => _mapUserService.GetUserLocationByIpAddress(ipAddress, geoLocationDBPath));
+            _mapUserService.GetUserLocationByIpAddress(ipAddress, geoLocationDBPath);
 
             return View();
         }
@@ -55,6 +56,7 @@ namespace MyPortfolio.Controllers
         public IActionResult MappingAccess()
         {
             ViewData["GoogleApiKey"] = _configuration.GetConnectionString("GoogleApiKey");
+            //TODO: Getal cities and send to js via viewmodel
             return View();
         }
 
