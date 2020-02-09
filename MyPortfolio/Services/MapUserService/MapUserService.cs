@@ -20,6 +20,8 @@ namespace MyPortfolio.Services.MapUserService
 
         public void GetUserLocationByIpAddress(IPAddress ipAddress, string geoLocationDBPath)
         {
+            if (string.IsNullOrEmpty(geoLocationDBPath) || ipAddress == null) return;
+
             CityResponse city = null;
 
             using (var reader = new DatabaseReader(geoLocationDBPath))
