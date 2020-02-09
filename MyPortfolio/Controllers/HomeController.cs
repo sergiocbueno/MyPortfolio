@@ -32,8 +32,7 @@ namespace MyPortfolio.Controllers
         {
             var ipAddress = _accessor.HttpContext.Connection.RemoteIpAddress;
             var geoLocationDBPath = _hostingEnvironment.ContentRootPath + _endOfGeoLocationDBPath;
-            //_ = Task.Run(() => _mapUserService.GetUserLocationByIpAddress(ipAddress, geoLocationDBPath));
-            _mapUserService.GetUserLocationByIpAddress(ipAddress, geoLocationDBPath);
+            _ = Task.Run(() => _mapUserService.GetUserLocationByIpAddress(ipAddress, geoLocationDBPath));
 
             return View();
         }

@@ -1,16 +1,16 @@
-﻿using MyPortfolio.Database.Models;
+﻿using Microsoft.Extensions.DependencyInjection;
 using PostgreSQLIntegration.Context;
-using System;
+using System.Linq;
 
 namespace MyPortfolio.Database.Repositories
 {
     public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : class
     {
-        protected readonly PostgreSQLContext _postgreSQLContext;
+        private readonly IServiceScopeFactory _scopeFactory;
 
-        public BaseRepository(PostgreSQLContext postgreSQLContext)
+        public BaseRepository(IServiceScopeFactory scopeFactory)
         {
-            _postgreSQLContext = postgreSQLContext;
+            _scopeFactory = scopeFactory;
         }
 
         public void Dispose()
@@ -19,7 +19,21 @@ namespace MyPortfolio.Database.Repositories
 
         public TEntity GetById(int id)
         {
-            return _postgreSQLContext.Set<TEntity>().Find(id);
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<PostgreSQLContext>();
+                dbContext.Set<TEntity>().AsQueryable();
+                return dbContext.Set<TEntity>().Find(id);
+            }
+        }
+
+        public IQueryable<TEntity> GetAll()
+        {
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<PostgreSQLContext>();
+                return dbContext.Set<TEntity>().AsQueryable();
+            }
         }
     }
 }

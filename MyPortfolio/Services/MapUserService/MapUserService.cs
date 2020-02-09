@@ -1,7 +1,7 @@
 ﻿using MaxMind.GeoIP2;
+using Microsoft.AspNetCore.Hosting;
 using MyPortfolio.Database.Models;
 using MyPortfolio.Database.Repositories;
-using PostgreSQLIntegration.Context;
 using System.Net;
 
 namespace MyPortfolio.Services.MapUserService
@@ -23,5 +23,7 @@ namespace MyPortfolio.Services.MapUserService
                 var city = reader.City("92.251.65.190");//(ipAddress);
             }
         }
+
+        //public void GetUserInsideMap ()
     }
 }
