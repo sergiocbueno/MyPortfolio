@@ -3,6 +3,7 @@ using MaxMind.GeoIP2.Responses;
 using MyPortfolio.Database.Models;
 using MyPortfolio.Database.Repositories;
 using MyPortfolio.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -20,14 +21,7 @@ namespace MyPortfolio.Services.MapUserService
 
         public void GetUserLocationByIpAddress(IPAddress ipAddress, string geoLocationDBPath)
         {
-            if (string.IsNullOrEmpty(geoLocationDBPath) || ipAddress == null) return;
-
-            CityResponse city = null;
-
-            using (var reader = new DatabaseReader(geoLocationDBPath))
-            {
-                city = reader.City(ipAddress);
-            }
+            var city = GetCityByIpAddress(ipAddress, geoLocationDBPath);
 
             if (!string.IsNullOrWhiteSpace(city?.City?.Name))
             {
@@ -45,13 +39,8 @@ namespace MyPortfolio.Services.MapUserService
         {
             const string itIsYou = "Hey, you found yourself, it's you here!";
             const string itIsNotYou = "Unlucky, this was another person access, try again!";
-            CityResponse city = null;
 
-            using (var reader = new DatabaseReader(geoLocationDBPath))
-            {
-                city = reader.City(ipAddress);
-            }
-
+            var city = GetCityByIpAddress(ipAddress, geoLocationDBPath);
             var allAccesses = _accessMapRepository.GetAllSingleThread();
             var accessMaps = new List<AccessMapViewModel>();
 
@@ -68,5 +57,34 @@ namespace MyPortfolio.Services.MapUserService
 
             return accessMaps;
         }
+
+        #region Private Methods
+
+        private CityResponse GetCityByIpAddress (IPAddress ipAddress, string geoLocationDBPath)
+        {
+            CityResponse city = null;
+            DatabaseReader reader = null;
+
+            try
+            {
+                reader = new DatabaseReader(geoLocationDBPath);
+                city = reader.City(ipAddress);
+            }
+            catch (Exception)
+            {
+                city = null;
+            }
+            finally
+            {
+                if (reader != null)
+                {
+                    reader.Dispose();
+                }
+            }
+
+            return city;
+        }
+
+        #endregion
     }
 }

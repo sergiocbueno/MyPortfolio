@@ -15,6 +15,11 @@ namespace TestCoverage.Service
     [TestClass]
     public class MapUserServiceTests
     {
+        private readonly string geoLocationDbPath = Directory.GetParent(Assembly.GetExecutingAssembly().Location).Parent.Parent.Parent.Parent.FullName +
+                Path.DirectorySeparatorChar + "MyPortfolio" +
+                Path.DirectorySeparatorChar + "GeoLocationDB" +
+                Path.DirectorySeparatorChar + "GeoLite2-City.mmdb";
+
         #region Method: GetUserLocationByIpAddress 
 
         [TestMethod]
@@ -55,7 +60,28 @@ namespace TestCoverage.Service
 
             // Action
             var mapUserService = new MapUserService(accessMapRepositoryMock.Object);
-            mapUserService.GetUserLocationByIpAddress(null, "/path/test");
+            mapUserService.GetUserLocationByIpAddress(null, geoLocationDbPath);
+
+            // Asserts
+            accessMapRepositoryMock.Verify(x => x.GetByExpressionMultiThread(It.IsAny<Expression<Func<AccessMap, bool>>>()), Times.Never);
+            accessMapRepositoryMock.Verify(x => x.SaveMultiThreadIncludingSaveContext(It.IsAny<AccessMap>()), Times.Never);
+        }
+
+        [TestMethod]
+        public void GetUserLocationByIpAddress_WhenIpAddressIsInvalid_ShouldNotCallDb()
+        {
+            // Setup test environment
+            var accessMapRepositoryMock = new Mock<IBaseRepository<AccessMap>>();
+            var data = new byte[4];
+            data[0] = 127;
+            data[1] = 0;
+            data[2] = 0;
+            data[3] = 1;
+            var ipAddress = new IPAddress(data);
+
+            // Action
+            var mapUserService = new MapUserService(accessMapRepositoryMock.Object);
+            mapUserService.GetUserLocationByIpAddress(ipAddress, geoLocationDbPath);
 
             // Asserts
             accessMapRepositoryMock.Verify(x => x.GetByExpressionMultiThread(It.IsAny<Expression<Func<AccessMap, bool>>>()), Times.Never);
@@ -82,15 +108,10 @@ namespace TestCoverage.Service
         {
             // Setup test environment
             var accessMapRepositoryMock = new Mock<IBaseRepository<AccessMap>>();
-            var solutionPath = Directory.GetParent(Assembly.GetExecutingAssembly().Location).Parent.Parent.Parent.Parent.FullName;
-            var fullPath = solutionPath +
-                Path.DirectorySeparatorChar + "MyPortfolio" +
-                Path.DirectorySeparatorChar + "GeoLocationDB" +
-                Path.DirectorySeparatorChar + "GeoLite2-City.mmdb";
 
             // Action
             var mapUserService = new MapUserService(accessMapRepositoryMock.Object);
-            mapUserService.GetUserLocationByIpAddress(new IPAddress(127001), fullPath);
+            mapUserService.GetUserLocationByIpAddress(new IPAddress(127001), geoLocationDbPath);
 
             // Asserts
             accessMapRepositoryMock.Verify(x => x.GetByExpressionMultiThread(It.IsAny<Expression<Func<AccessMap, bool>>>()), Times.Never);
@@ -106,12 +127,6 @@ namespace TestCoverage.Service
             accessMapRepositoryMock.Setup(x => x.GetByExpressionMultiThread(It.IsAny<Expression<Func<AccessMap, bool>>>()))
                 .Returns(new List<AccessMap> { sydneyCity });
 
-            var solutionPath = Directory.GetParent(Assembly.GetExecutingAssembly().Location).Parent.Parent.Parent.Parent.FullName;
-            var fullPath = solutionPath +
-                Path.DirectorySeparatorChar + "MyPortfolio" +
-                Path.DirectorySeparatorChar + "GeoLocationDB" +
-                Path.DirectorySeparatorChar + "GeoLite2-City.mmdb";
-
             var data = new byte[4];
             data[0] = 113;
             data[1] = 197;
@@ -121,7 +136,7 @@ namespace TestCoverage.Service
 
             // Action
             var mapUserService = new MapUserService(accessMapRepositoryMock.Object);
-            mapUserService.GetUserLocationByIpAddress(ipAddress, fullPath);
+            mapUserService.GetUserLocationByIpAddress(ipAddress, geoLocationDbPath);
 
             // Asserts
             accessMapRepositoryMock.Verify(x => x.GetByExpressionMultiThread(It.IsAny<Expression<Func<AccessMap, bool>>>()), Times.Once);
@@ -136,12 +151,6 @@ namespace TestCoverage.Service
             accessMapRepositoryMock.Setup(x => x.GetByExpressionMultiThread(It.IsAny<Expression<Func<AccessMap, bool>>>()))
                 .Returns(new List<AccessMap>());
 
-            var solutionPath = Directory.GetParent(Assembly.GetExecutingAssembly().Location).Parent.Parent.Parent.Parent.FullName;
-            var fullPath = solutionPath + 
-                Path.DirectorySeparatorChar + "MyPortfolio" +
-                Path.DirectorySeparatorChar + "GeoLocationDB" +
-                Path.DirectorySeparatorChar + "GeoLite2-City.mmdb";
-
             var data = new byte[4];
             data[0] = 113;
             data[1] = 197;
@@ -151,7 +160,7 @@ namespace TestCoverage.Service
 
             // Action
             var mapUserService = new MapUserService(accessMapRepositoryMock.Object);
-            mapUserService.GetUserLocationByIpAddress(ipAddress, fullPath);
+            mapUserService.GetUserLocationByIpAddress(ipAddress, geoLocationDbPath);
 
             // Asserts
             accessMapRepositoryMock.Verify(x => x.GetByExpressionMultiThread(It.IsAny<Expression<Func<AccessMap, bool>>>()), Times.Once);
