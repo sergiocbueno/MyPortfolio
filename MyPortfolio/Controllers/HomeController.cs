@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using MyPortfolio.Models;
 using MyPortfolio.Services.MapUserService;
@@ -11,18 +12,18 @@ namespace MyPortfolio.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly IHttpContextAccessor _accessor;
+        private readonly IActionContextAccessor _actionContextAccessor;
         private readonly IHostingEnvironment _hostingEnvironment;
         private readonly IMapUserService _mapUserService;
         private readonly IConfiguration _configuration;
         private const string _endOfGeoLocationDBPath = "\\GeoLocationDB\\GeoLite2-City.mmdb";
 
-        public HomeController(IHttpContextAccessor accessor, 
+        public HomeController(IActionContextAccessor actionContextAccessor, 
             IHostingEnvironment hostingEnvironment, 
             IMapUserService mapUserService,
             IConfiguration configuration)
         {
-            _accessor = accessor;
+            _actionContextAccessor = actionContextAccessor;
             _hostingEnvironment = hostingEnvironment;
             _mapUserService = mapUserService;
             _configuration = configuration;
@@ -30,7 +31,7 @@ namespace MyPortfolio.Controllers
 
         public IActionResult About()
         {
-            var ipAddress = _accessor.HttpContext.Connection.RemoteIpAddress;
+            var ipAddress = _actionContextAccessor.ActionContext.HttpContext.Connection.RemoteIpAddress;
             var geoLocationDBPath = _hostingEnvironment.ContentRootPath + _endOfGeoLocationDBPath;
             _ = Task.Run(() => _mapUserService.GetUserLocationByIpAddress(ipAddress, geoLocationDBPath));
 
@@ -56,7 +57,7 @@ namespace MyPortfolio.Controllers
         {
             ViewData["GoogleApiKey"] = _configuration.GetConnectionString("GoogleApiKey");
 
-            var ipAddress = _accessor.HttpContext.Connection.RemoteIpAddress;
+            var ipAddress = _actionContextAccessor.ActionContext.HttpContext.Connection.RemoteIpAddress;
             var geoLocationDBPath = _hostingEnvironment.ContentRootPath + _endOfGeoLocationDBPath;
             var accessMapViewModel = _mapUserService.FindUserInsideMap(ipAddress, geoLocationDBPath);
 
