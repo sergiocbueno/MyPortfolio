@@ -1,0 +1,43 @@
+﻿@model IList<AccessMapViewModel>
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script>
+    google.charts.load(
+        'current',
+        {
+            'packages': ['map'],
+            'mapsApiKey': '@ViewData["GoogleApiKey"]'
+        });
+    google.charts.setOnLoadCallback(drawMap);
+
+    function drawMap() {
+        var data = google.visualization.arrayToDataTable([
+            ['City', 'Name'],
+            @foreach (var item in Model)
+            {
+                @:['@item.CityName', '@item.Message'],
+            }
+        ]);
+
+        var options = {
+            showTooltip: true,
+            showInfoWindow: true,
+            zoom: 1,
+            minZoom: 1
+        };
+
+        var map = new google.visualization.Map(document.getElementById('chart_div'));
+        map.draw(data, options);
+    };
+</script>
+
+<section class="resume-section p-3 p-lg-5 d-flex d-column">
+    <div class="my-auto">
+        <h1 class="mb-0">
+            Accesses around the world
+        </h1>
+        <p class="mb-3">Try to find yourself in the map!</p>
+        <div id="chart_div"></div>
+        <p class="mb-3">We are using your external IP Address to locate you.</p>
+        <p class="mb-3">So if you disagree with your location, report to your internet provider or turn off the VPN!</p>
+    </div>
+</section>
