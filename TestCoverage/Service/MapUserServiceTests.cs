@@ -83,7 +83,10 @@ namespace TestCoverage.Service
             // Setup test environment
             var accessMapRepositoryMock = new Mock<IBaseRepository<AccessMap>>();
             var solutionPath = Directory.GetParent(Assembly.GetExecutingAssembly().Location).Parent.Parent.Parent.Parent.FullName;
-            var fullPath = solutionPath + "\\MyPortfolio\\GeoLocationDB\\GeoLite2-City.mmdb";
+            var fullPath = solutionPath +
+                Path.DirectorySeparatorChar + "MyPortfolio" +
+                Path.DirectorySeparatorChar + "GeoLocationDB" +
+                Path.DirectorySeparatorChar + "GeoLite2-City.mmdb";
 
             // Action
             var mapUserService = new MapUserService(accessMapRepositoryMock.Object);
@@ -104,7 +107,10 @@ namespace TestCoverage.Service
                 .Returns(new List<AccessMap> { sydneyCity });
 
             var solutionPath = Directory.GetParent(Assembly.GetExecutingAssembly().Location).Parent.Parent.Parent.Parent.FullName;
-            var fullPath = solutionPath + "\\MyPortfolio\\GeoLocationDB\\GeoLite2-City.mmdb";
+            var fullPath = solutionPath +
+                Path.DirectorySeparatorChar + "MyPortfolio" +
+                Path.DirectorySeparatorChar + "GeoLocationDB" +
+                Path.DirectorySeparatorChar + "GeoLite2-City.mmdb";
 
             var data = new byte[4];
             data[0] = 113;
@@ -131,7 +137,10 @@ namespace TestCoverage.Service
                 .Returns(new List<AccessMap>());
 
             var solutionPath = Directory.GetParent(Assembly.GetExecutingAssembly().Location).Parent.Parent.Parent.Parent.FullName;
-            var fullPath = solutionPath + "\\MyPortfolio\\GeoLocationDB\\GeoLite2-City.mmdb";
+            var fullPath = solutionPath + 
+                Path.DirectorySeparatorChar + "MyPortfolio" +
+                Path.DirectorySeparatorChar + "GeoLocationDB" +
+                Path.DirectorySeparatorChar + "GeoLite2-City.mmdb";
 
             var data = new byte[4];
             data[0] = 113;
