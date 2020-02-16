@@ -6,7 +6,6 @@ using MyPortfolio.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 
 namespace MyPortfolio.Services.MapUserService
 {
@@ -19,7 +18,7 @@ namespace MyPortfolio.Services.MapUserService
             _accessMapRepository = accessMapRepository;
         }
 
-        public void GetUserLocationByIpAddress(IPAddress ipAddress, string geoLocationDBPath)
+        public void GetUserLocationByIpAddress(string ipAddress, string geoLocationDBPath)
         {
             var city = GetCityByIpAddress(ipAddress, geoLocationDBPath);
 
@@ -35,7 +34,7 @@ namespace MyPortfolio.Services.MapUserService
             }
         }
 
-        public IList<AccessMapViewModel> FindUserInsideMap (IPAddress ipAddress, string geoLocationDBPath)
+        public IList<AccessMapViewModel> FindUserInsideMap (string ipAddress, string geoLocationDBPath)
         {
             const string itIsYou = "Hey, you found yourself, it's you here!";
             const string itIsNotYou = "Unlucky, this was another person access, try again!";
@@ -60,7 +59,7 @@ namespace MyPortfolio.Services.MapUserService
 
         #region Private Methods
 
-        private CityResponse GetCityByIpAddress (IPAddress ipAddress, string geoLocationDBPath)
+        private CityResponse GetCityByIpAddress (string ipAddress, string geoLocationDBPath)
         {
             CityResponse city = null;
             DatabaseReader reader = null;

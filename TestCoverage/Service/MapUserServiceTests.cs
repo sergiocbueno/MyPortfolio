@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Net;
 using System.Reflection;
 
 namespace TestCoverage.Service
@@ -31,7 +30,7 @@ namespace TestCoverage.Service
 
             // Action
             var mapUserService = new MapUserService(accessMapRepositoryMock.Object);
-            mapUserService.GetUserLocationByIpAddress(new IPAddress(127001), null);
+            mapUserService.GetUserLocationByIpAddress("92.251.65.190", null);
 
             // Asserts
             accessMapRepositoryMock.Verify(x => x.GetByExpressionMultiThread(It.IsAny<Expression<Func<AccessMap, bool>>>()), Times.Never);
@@ -46,7 +45,7 @@ namespace TestCoverage.Service
 
             // Action
             var mapUserService = new MapUserService(accessMapRepositoryMock.Object);
-            mapUserService.GetUserLocationByIpAddress(new IPAddress(127001), string.Empty);
+            mapUserService.GetUserLocationByIpAddress("92.251.65.190", string.Empty);
 
             // Asserts
             accessMapRepositoryMock.Verify(x => x.GetByExpressionMultiThread(It.IsAny<Expression<Func<AccessMap, bool>>>()), Times.Never);
@@ -73,16 +72,10 @@ namespace TestCoverage.Service
         {
             // Setup test environment
             var accessMapRepositoryMock = new Mock<IBaseRepository<AccessMap>>();
-            var data = new byte[4];
-            data[0] = 127;
-            data[1] = 0;
-            data[2] = 0;
-            data[3] = 1;
-            var ipAddress = new IPAddress(data);
 
             // Action
             var mapUserService = new MapUserService(accessMapRepositoryMock.Object);
-            mapUserService.GetUserLocationByIpAddress(ipAddress, geoLocationDbPath);
+            mapUserService.GetUserLocationByIpAddress("127.0.0.1", geoLocationDbPath);
 
             // Asserts
             accessMapRepositoryMock.Verify(x => x.GetByExpressionMultiThread(It.IsAny<Expression<Func<AccessMap, bool>>>()), Times.Never);
@@ -112,7 +105,7 @@ namespace TestCoverage.Service
 
             // Action
             var mapUserService = new MapUserService(accessMapRepositoryMock.Object);
-            mapUserService.GetUserLocationByIpAddress(new IPAddress(127001), geoLocationDbPath);
+            mapUserService.GetUserLocationByIpAddress("127.0.0.1", geoLocationDbPath);
 
             // Asserts
             accessMapRepositoryMock.Verify(x => x.GetByExpressionMultiThread(It.IsAny<Expression<Func<AccessMap, bool>>>()), Times.Never);
@@ -128,16 +121,9 @@ namespace TestCoverage.Service
             accessMapRepositoryMock.Setup(x => x.GetByExpressionMultiThread(It.IsAny<Expression<Func<AccessMap, bool>>>()))
                 .Returns(new List<AccessMap> { sydneyCity });
 
-            var data = new byte[4];
-            data[0] = 113;
-            data[1] = 197;
-            data[2] = 7;
-            data[3] = 177;
-            var ipAddress = new IPAddress(data);
-
             // Action
             var mapUserService = new MapUserService(accessMapRepositoryMock.Object);
-            mapUserService.GetUserLocationByIpAddress(ipAddress, geoLocationDbPath);
+            mapUserService.GetUserLocationByIpAddress("113.197.7.177", geoLocationDbPath);
 
             // Asserts
             accessMapRepositoryMock.Verify(x => x.GetByExpressionMultiThread(It.IsAny<Expression<Func<AccessMap, bool>>>()), Times.Once);
@@ -152,16 +138,9 @@ namespace TestCoverage.Service
             accessMapRepositoryMock.Setup(x => x.GetByExpressionMultiThread(It.IsAny<Expression<Func<AccessMap, bool>>>()))
                 .Returns(new List<AccessMap>());
 
-            var data = new byte[4];
-            data[0] = 113;
-            data[1] = 197;
-            data[2] = 7;
-            data[3] = 177;
-            var ipAddress = new IPAddress(data);
-
             // Action
             var mapUserService = new MapUserService(accessMapRepositoryMock.Object);
-            mapUserService.GetUserLocationByIpAddress(ipAddress, geoLocationDbPath);
+            mapUserService.GetUserLocationByIpAddress("113.197.7.177", geoLocationDbPath);
 
             // Asserts
             accessMapRepositoryMock.Verify(x => x.GetByExpressionMultiThread(It.IsAny<Expression<Func<AccessMap, bool>>>()), Times.Once);
@@ -188,7 +167,7 @@ namespace TestCoverage.Service
 
             // Action
             var mapUserService = new MapUserService(accessMapRepositoryMock.Object);
-            var actualResult = mapUserService.FindUserInsideMap(new IPAddress(127001), null);
+            var actualResult = mapUserService.FindUserInsideMap("92.251.65.190", null);
 
             // Asserts
             accessMapRepositoryMock.Verify(x => x.GetAllSingleThread(), Times.Once);
@@ -216,7 +195,7 @@ namespace TestCoverage.Service
 
             // Action
             var mapUserService = new MapUserService(accessMapRepositoryMock.Object);
-            var actualResult = mapUserService.FindUserInsideMap(new IPAddress(127001), string.Empty);
+            var actualResult = mapUserService.FindUserInsideMap("92.251.65.190", string.Empty);
 
             // Asserts
             accessMapRepositoryMock.Verify(x => x.GetAllSingleThread(), Times.Once);
@@ -270,16 +249,9 @@ namespace TestCoverage.Service
             var accessMapRepositoryMock = new Mock<IBaseRepository<AccessMap>>();
             accessMapRepositoryMock.Setup(x => x.GetAllSingleThread()).Returns(expectedReturn);
 
-            var data = new byte[4];
-            data[0] = 127;
-            data[1] = 0;
-            data[2] = 0;
-            data[3] = 1;
-            var ipAddress = new IPAddress(data);
-
             // Action
             var mapUserService = new MapUserService(accessMapRepositoryMock.Object);
-            var actualResult = mapUserService.FindUserInsideMap(ipAddress, geoLocationDbPath);
+            var actualResult = mapUserService.FindUserInsideMap("127.0.0.1", geoLocationDbPath);
 
             // Asserts
             accessMapRepositoryMock.Verify(x => x.GetAllSingleThread(), Times.Once);
@@ -334,16 +306,9 @@ namespace TestCoverage.Service
             var accessMapRepositoryMock = new Mock<IBaseRepository<AccessMap>>();
             accessMapRepositoryMock.Setup(x => x.GetAllSingleThread()).Returns(expectedReturn);
 
-            var data = new byte[4];
-            data[0] = 138;
-            data[1] = 197;
-            data[2] = 130;
-            data[3] = 102;
-            var ipAddress = new IPAddress(data);
-
             // Action
             var mapUserService = new MapUserService(accessMapRepositoryMock.Object);
-            var actualResult = mapUserService.FindUserInsideMap(ipAddress, geoLocationDbPath);
+            var actualResult = mapUserService.FindUserInsideMap("138.197.130.102", geoLocationDbPath);
 
             // Asserts
             accessMapRepositoryMock.Verify(x => x.GetAllSingleThread(), Times.Once);
@@ -369,16 +334,9 @@ namespace TestCoverage.Service
             var accessMapRepositoryMock = new Mock<IBaseRepository<AccessMap>>();
             accessMapRepositoryMock.Setup(x => x.GetAllSingleThread()).Returns(expectedReturn);
 
-            var data = new byte[4];
-            data[0] = 142;
-            data[1] = 93;
-            data[2] = 170;
-            data[3] = 2;
-            var ipAddress = new IPAddress(data);
-
             // Action
             var mapUserService = new MapUserService(accessMapRepositoryMock.Object);
-            var actualResult = mapUserService.FindUserInsideMap(ipAddress, geoLocationDbPath);
+            var actualResult = mapUserService.FindUserInsideMap("142.93.170.2", geoLocationDbPath);
 
             // Asserts
             accessMapRepositoryMock.Verify(x => x.GetAllSingleThread(), Times.Once);
