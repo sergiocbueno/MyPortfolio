@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using MyPortfolio.Database.Models;
 using MyPortfolio.Database.Repositories;
@@ -27,9 +28,10 @@ namespace TestCoverage.Service
         {
             // Setup test environment
             var accessMapRepositoryMock = new Mock<IBaseRepository<AccessMap>>();
+            var mapUserServiceLoggingMock = new Mock<ILogger<MapUserService>>();
 
             // Action
-            var mapUserService = new MapUserService(accessMapRepositoryMock.Object);
+            var mapUserService = new MapUserService(accessMapRepositoryMock.Object, mapUserServiceLoggingMock.Object);
             mapUserService.GetUserLocationByIpAddress("92.251.65.190", null);
 
             // Asserts
@@ -42,9 +44,10 @@ namespace TestCoverage.Service
         {
             // Setup test environment
             var accessMapRepositoryMock = new Mock<IBaseRepository<AccessMap>>();
+            var mapUserServiceLoggingMock = new Mock<ILogger<MapUserService>>();
 
             // Action
-            var mapUserService = new MapUserService(accessMapRepositoryMock.Object);
+            var mapUserService = new MapUserService(accessMapRepositoryMock.Object, mapUserServiceLoggingMock.Object);
             mapUserService.GetUserLocationByIpAddress("92.251.65.190", string.Empty);
 
             // Asserts
@@ -57,9 +60,10 @@ namespace TestCoverage.Service
         {
             // Setup test environment
             var accessMapRepositoryMock = new Mock<IBaseRepository<AccessMap>>();
+            var mapUserServiceLoggingMock = new Mock<ILogger<MapUserService>>();
 
             // Action
-            var mapUserService = new MapUserService(accessMapRepositoryMock.Object);
+            var mapUserService = new MapUserService(accessMapRepositoryMock.Object, mapUserServiceLoggingMock.Object);
             mapUserService.GetUserLocationByIpAddress(null, geoLocationDbPath);
 
             // Asserts
@@ -72,9 +76,10 @@ namespace TestCoverage.Service
         {
             // Setup test environment
             var accessMapRepositoryMock = new Mock<IBaseRepository<AccessMap>>();
+            var mapUserServiceLoggingMock = new Mock<ILogger<MapUserService>>();
 
             // Action
-            var mapUserService = new MapUserService(accessMapRepositoryMock.Object);
+            var mapUserService = new MapUserService(accessMapRepositoryMock.Object, mapUserServiceLoggingMock.Object);
             mapUserService.GetUserLocationByIpAddress("127.0.0.1", geoLocationDbPath);
 
             // Asserts
@@ -87,9 +92,10 @@ namespace TestCoverage.Service
         {
             // Setup test environment
             var accessMapRepositoryMock = new Mock<IBaseRepository<AccessMap>>();
+            var mapUserServiceLoggingMock = new Mock<ILogger<MapUserService>>();
 
             // Action
-            var mapUserService = new MapUserService(accessMapRepositoryMock.Object);
+            var mapUserService = new MapUserService(accessMapRepositoryMock.Object, mapUserServiceLoggingMock.Object);
             mapUserService.GetUserLocationByIpAddress(null, null);
 
             // Asserts
@@ -102,9 +108,10 @@ namespace TestCoverage.Service
         {
             // Setup test environment
             var accessMapRepositoryMock = new Mock<IBaseRepository<AccessMap>>();
+            var mapUserServiceLoggingMock = new Mock<ILogger<MapUserService>>();
 
             // Action
-            var mapUserService = new MapUserService(accessMapRepositoryMock.Object);
+            var mapUserService = new MapUserService(accessMapRepositoryMock.Object, mapUserServiceLoggingMock.Object);
             mapUserService.GetUserLocationByIpAddress("127.0.0.1", geoLocationDbPath);
 
             // Asserts
@@ -117,12 +124,13 @@ namespace TestCoverage.Service
         {
             // Setup test environment
             var sydneyCity = new AccessMap { Id = 5, City = "sydney" };
+            var mapUserServiceLoggingMock = new Mock<ILogger<MapUserService>>();
             var accessMapRepositoryMock = new Mock<IBaseRepository<AccessMap>>();
             accessMapRepositoryMock.Setup(x => x.GetByExpressionMultiThread(It.IsAny<Expression<Func<AccessMap, bool>>>()))
                 .Returns(new List<AccessMap> { sydneyCity });
 
             // Action
-            var mapUserService = new MapUserService(accessMapRepositoryMock.Object);
+            var mapUserService = new MapUserService(accessMapRepositoryMock.Object, mapUserServiceLoggingMock.Object);
             mapUserService.GetUserLocationByIpAddress("113.197.7.177", geoLocationDbPath);
 
             // Asserts
@@ -134,12 +142,13 @@ namespace TestCoverage.Service
         public void GetUserLocationByIpAddress_WhenCityDoesNotExistsInDb_ShouldSaveThisDataInDb()
         {
             // Setup test environment
+            var mapUserServiceLoggingMock = new Mock<ILogger<MapUserService>>();
             var accessMapRepositoryMock = new Mock<IBaseRepository<AccessMap>>();
             accessMapRepositoryMock.Setup(x => x.GetByExpressionMultiThread(It.IsAny<Expression<Func<AccessMap, bool>>>()))
                 .Returns(new List<AccessMap>());
 
             // Action
-            var mapUserService = new MapUserService(accessMapRepositoryMock.Object);
+            var mapUserService = new MapUserService(accessMapRepositoryMock.Object, mapUserServiceLoggingMock.Object);
             mapUserService.GetUserLocationByIpAddress("113.197.7.177", geoLocationDbPath);
 
             // Asserts
@@ -162,11 +171,12 @@ namespace TestCoverage.Service
             var accessMaps = new List<AccessMap> { romeCity, torontoCity };
             var expectedReturn = accessMaps.AsQueryable();
 
+            var mapUserServiceLoggingMock = new Mock<ILogger<MapUserService>>();
             var accessMapRepositoryMock = new Mock<IBaseRepository<AccessMap>>();
             accessMapRepositoryMock.Setup(x => x.GetAllSingleThread()).Returns(expectedReturn);
 
             // Action
-            var mapUserService = new MapUserService(accessMapRepositoryMock.Object);
+            var mapUserService = new MapUserService(accessMapRepositoryMock.Object, mapUserServiceLoggingMock.Object);
             var actualResult = mapUserService.FindUserInsideMap("92.251.65.190", null);
 
             // Asserts
@@ -190,11 +200,12 @@ namespace TestCoverage.Service
             var accessMaps = new List<AccessMap> { romeCity, torontoCity };
             var expectedReturn = accessMaps.AsQueryable();
 
+            var mapUserServiceLoggingMock = new Mock<ILogger<MapUserService>>();
             var accessMapRepositoryMock = new Mock<IBaseRepository<AccessMap>>();
             accessMapRepositoryMock.Setup(x => x.GetAllSingleThread()).Returns(expectedReturn);
 
             // Action
-            var mapUserService = new MapUserService(accessMapRepositoryMock.Object);
+            var mapUserService = new MapUserService(accessMapRepositoryMock.Object, mapUserServiceLoggingMock.Object);
             var actualResult = mapUserService.FindUserInsideMap("92.251.65.190", string.Empty);
 
             // Asserts
@@ -218,11 +229,12 @@ namespace TestCoverage.Service
             var accessMaps = new List<AccessMap> { romeCity, torontoCity };
             var expectedReturn = accessMaps.AsQueryable();
 
+            var mapUserServiceLoggingMock = new Mock<ILogger<MapUserService>>();
             var accessMapRepositoryMock = new Mock<IBaseRepository<AccessMap>>();
             accessMapRepositoryMock.Setup(x => x.GetAllSingleThread()).Returns(expectedReturn);
 
             // Action
-            var mapUserService = new MapUserService(accessMapRepositoryMock.Object);
+            var mapUserService = new MapUserService(accessMapRepositoryMock.Object, mapUserServiceLoggingMock.Object);
             var actualResult = mapUserService.FindUserInsideMap(null, geoLocationDbPath);
 
             // Asserts
@@ -246,11 +258,12 @@ namespace TestCoverage.Service
             var accessMaps = new List<AccessMap> { romeCity, torontoCity };
             var expectedReturn = accessMaps.AsQueryable();
 
+            var mapUserServiceLoggingMock = new Mock<ILogger<MapUserService>>();
             var accessMapRepositoryMock = new Mock<IBaseRepository<AccessMap>>();
             accessMapRepositoryMock.Setup(x => x.GetAllSingleThread()).Returns(expectedReturn);
 
             // Action
-            var mapUserService = new MapUserService(accessMapRepositoryMock.Object);
+            var mapUserService = new MapUserService(accessMapRepositoryMock.Object, mapUserServiceLoggingMock.Object);
             var actualResult = mapUserService.FindUserInsideMap("127.0.0.1", geoLocationDbPath);
 
             // Asserts
@@ -274,11 +287,12 @@ namespace TestCoverage.Service
             var accessMaps = new List<AccessMap> { romeCity, torontoCity };
             var expectedReturn = accessMaps.AsQueryable();
 
+            var mapUserServiceLoggingMock = new Mock<ILogger<MapUserService>>();
             var accessMapRepositoryMock = new Mock<IBaseRepository<AccessMap>>();
             accessMapRepositoryMock.Setup(x => x.GetAllSingleThread()).Returns(expectedReturn);
 
             // Action
-            var mapUserService = new MapUserService(accessMapRepositoryMock.Object);
+            var mapUserService = new MapUserService(accessMapRepositoryMock.Object, mapUserServiceLoggingMock.Object);
             var actualResult = mapUserService.FindUserInsideMap(null, null);
 
             // Asserts
@@ -303,11 +317,12 @@ namespace TestCoverage.Service
             var accessMaps = new List<AccessMap> { romeCity, torontoCity };
             var expectedReturn = accessMaps.AsQueryable();
 
+            var mapUserServiceLoggingMock = new Mock<ILogger<MapUserService>>();
             var accessMapRepositoryMock = new Mock<IBaseRepository<AccessMap>>();
             accessMapRepositoryMock.Setup(x => x.GetAllSingleThread()).Returns(expectedReturn);
 
             // Action
-            var mapUserService = new MapUserService(accessMapRepositoryMock.Object);
+            var mapUserService = new MapUserService(accessMapRepositoryMock.Object, mapUserServiceLoggingMock.Object);
             var actualResult = mapUserService.FindUserInsideMap("138.197.130.102", geoLocationDbPath);
 
             // Asserts
@@ -331,11 +346,12 @@ namespace TestCoverage.Service
             var accessMaps = new List<AccessMap> { romeCity, torontoCity };
             var expectedReturn = accessMaps.AsQueryable();
 
+            var mapUserServiceLoggingMock = new Mock<ILogger<MapUserService>>();
             var accessMapRepositoryMock = new Mock<IBaseRepository<AccessMap>>();
             accessMapRepositoryMock.Setup(x => x.GetAllSingleThread()).Returns(expectedReturn);
 
             // Action
-            var mapUserService = new MapUserService(accessMapRepositoryMock.Object);
+            var mapUserService = new MapUserService(accessMapRepositoryMock.Object, mapUserServiceLoggingMock.Object);
             var actualResult = mapUserService.FindUserInsideMap("142.93.170.2", geoLocationDbPath);
 
             // Asserts
