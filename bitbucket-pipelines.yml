@@ -1,26 +1,31 @@
 image: microsoft/dotnet:2.2-sdk
 
-pipelines:
-    default:
-        - step:
-            name: 
-                Restore Solution
-            script: 
+definitions:
+    steps:
+        - step: &Restore-step
+            name: Restore Solution
+            script:
                 - dotnet restore
-        - step:
-            name:
-                Build Solution
+        - step: &Build-step
+            name: Build Solution
             script:
                 - dotnet build
-        - step:
-            name:
-                Execute Tests
+        - step: &Test-step
+            name: Execute Tests
             script:
                 - dotnet test
+
+pipelines:
+    default:
+        - step: *Restore-step
+        - step: *Build-step
+        - step: *Test-step
     branches:
         master:
+            - step: *Restore-step
+            - step: *Build-step
+            - step: *Test-step
             - step:
-                name: 
-                    Deploy Application
+                name: Deploy Application
                 script:
                     - echo "Deploying is only happening in master branch!"
