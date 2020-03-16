@@ -29,3 +29,4 @@ pipelines:
                 name: Deploy Application
                 script:
                     - echo "Deploying is only happening in master branch!"
+                    - docker info
