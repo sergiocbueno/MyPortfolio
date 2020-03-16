@@ -28,8 +28,12 @@ pipelines:
             - step:
                 name: Deploy Application
                 script:
-                    - echo "Deploying is only happening in master branch!"
                     - docker version
-                    - docker info
+                    - sed -i -e 's/<PUT-YOUR-GOOGLE-MAPS-API-KEY-HERE>/$GOOGLE_MAPS_API_KEY/g' ./MyPortfolio/appsettings.json
+                    - sed -i -e 's/<HOST>/$DATABASE_HOST/g' ./MyPortfolio/appsettings.json
+                    - sed -i -e 's/<DATABASE>/$DATABASE_NAME/g' ./MyPortfolio/appsettings.json
+                    - sed -i -e 's/<USERNAME>/$DATABASE_USERNAME/g' ./MyPortfolio/appsettings.json
+                    - sed -i -e 's/<PASSWORD>/$DATABASE_PASSWORD/g' ./MyPortfolio/appsettings.json
+                    - cat ./MyPortfolio/appsettings.json
                 services:
                     - docker
