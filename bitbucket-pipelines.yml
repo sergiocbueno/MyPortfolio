@@ -34,6 +34,12 @@ pipelines:
                     - sed -i -e "s/<DATABASE>/$DATABASE_NAME/g" ./MyPortfolio/appsettings.json
                     - sed -i -e "s/<USERNAME>/$DATABASE_USERNAME/g" ./MyPortfolio/appsettings.json
                     - sed -i -e "s/<PASSWORD>/$DATABASE_PASSWORD/g" ./MyPortfolio/appsettings.json
-                    - cat ./MyPortfolio/appsettings.json
+                    - docker version
+                    - docker build -t portfolioapp -f Dockerfile .
+                    - docker login --username=$HEROKU_USERNAME --password=$HEROKU_API_KEY registry.heroku.com
+                    - docker tag portfolioapp registry.heroku.com/$HEROKU_APP_NAME/web
+                    - docker push registry.heroku.com/$HEROKU_APP_NAME/web
+                    - curl https://cli-assets.heroku.com/install.sh | sh
+                    - heroku container:release web -a $HEROKU_APP_NAME
                 services:
                     - docker
