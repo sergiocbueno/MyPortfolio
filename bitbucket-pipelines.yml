@@ -28,14 +28,13 @@ pipelines:
             - step:
                 name: Deploy Application
                 script:
-                    - docker version
-                    - sed -i -e "s/<PUT-YOUR-GOOGLE-MAPS-API-KEY-HERE>/$GOOGLE_MAPS_API_KEY/g" ./MyPortfolio/appsettings.json
-                    - sed -i -e "s/<HOST>/$DATABASE_HOST/g" ./MyPortfolio/appsettings.json
-                    - sed -i -e "s/<DATABASE>/$DATABASE_NAME/g" ./MyPortfolio/appsettings.json
-                    - sed -i -e "s/<USERNAME>/$DATABASE_USERNAME/g" ./MyPortfolio/appsettings.json
-                    - sed -i -e "s/<PASSWORD>/$DATABASE_PASSWORD/g" ./MyPortfolio/appsettings.json
-                    - docker version
                     - cd MyPortfolio/
+                    - sed -i -e "s/<PUT-YOUR-GOOGLE-MAPS-API-KEY-HERE>/$GOOGLE_MAPS_API_KEY/g" appsettings.json
+                    - sed -i -e "s/<HOST>/$DATABASE_HOST/g" appsettings.json
+                    - sed -i -e "s/<DATABASE>/$DATABASE_NAME/g" appsettings.json
+                    - sed -i -e "s/<USERNAME>/$DATABASE_USERNAME/g" appsettings.json
+                    - sed -i -e "s/<PASSWORD>/$DATABASE_PASSWORD/g" appsettings.json
+                    - docker version
                     - docker build -t portfolioapp -f Dockerfile .
                     - docker login --username=$HEROKU_USERNAME --password=$HEROKU_API_KEY registry.heroku.com
                     - docker tag portfolioapp registry.heroku.com/$HEROKU_APP_NAME/web
