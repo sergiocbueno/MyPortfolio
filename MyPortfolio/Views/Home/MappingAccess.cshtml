@@ -1,8 +1,17 @@
 ﻿<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-<script src="~/js/mappingAccess.js"></script>
+<environment include="Development">
+    <script src="~/js/mappingAccess.js"></script>
+    <link href="~/css/loading.css" rel="stylesheet">
+</environment>
+<environment exclude="Development">
+    <script src="~/js/mappingAccess.min.js"></script>
+    <link href="~/css/loading.min.css" rel="stylesheet">
+</environment>
 
-<section class="resume-section p-3 p-lg-5 d-flex d-column">
-    <div class="my-auto">
+
+<div id="loading" class="loading-style"></div>
+<section class="resume-section p-3 p-lg-5 d-flex d-column" style="border-bottom: none;">
+    <div id="mapping" class="my-auto" style="display:none;">
         <h1 class="mb-0">
             Accesses around the world
         </h1>

@@ -49,6 +49,8 @@ function generateMapChart(mapData, apiKey) {
         };
 
         var map = new google.visualization.Map(document.getElementById('chart_div'));
+        $('#loading').hide();
+        $('#mapping').show();
         map.draw(data, options);
     };
 }
