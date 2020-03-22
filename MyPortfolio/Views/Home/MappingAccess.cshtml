@@ -1,14 +1,24 @@
 ﻿<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-<script src="~/js/mappingAccess.js"></script>
+<environment include="Development">
+    <script src="~/js/mappingAccess.js"></script>
+    <link href="~/css/loading.css" rel="stylesheet">
+</environment>
+<environment exclude="Development">
+    <script src="~/js/mappingAccess.min.js"></script>
+    <link href="~/css/loading.min.css" rel="stylesheet">
+</environment>
 
-<section class="resume-section p-3 p-lg-5 d-flex d-column">
-    <div class="my-auto">
+
+<div id="loading" class="loading-style"></div>
+<section class="resume-section p-3 p-lg-5 d-flex d-column" style="border-bottom: none;">
+    <div id="mapping" class="my-auto" style="display:none;">
         <h1 class="mb-0">
-            Accesses around the world
+            Accesses Map
         </h1>
-        <p class="mb-3">Try to find yourself in the map!</p>
+        <p class="mb-3">On this page you can see all accesses around the world into this portfolio.</p>
+        <p class="mb-3">You can try to find yourself in the map!</p>
         <div id="chart_div"></div>
         <p class="mb-3">We are using your external IP Address to locate you.</p>
-        <p class="mb-3">So if you disagree with your location, report to your internet provider or turn off the VPN!</p>
+        <p class="mb-3">So if you disagree with your location, report to your internet provider or turn off the VPN! Haha</p>
     </div>
 </section>

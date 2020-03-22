@@ -50,5 +50,7 @@ function generateMapChart(mapData, apiKey) {
 
         var map = new google.visualization.Map(document.getElementById('chart_div'));
         map.draw(data, options);
+        $('#loading').hide();
+        $('#mapping').show();
     };
 }
