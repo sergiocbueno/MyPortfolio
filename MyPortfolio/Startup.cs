@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MyPortfolio.Database.Repositories;
+using MyPortfolio.Middleware;
 using MyPortfolio.Services.MapUserService;
 using PostgreSQLIntegration.Context;
 
@@ -39,6 +40,7 @@ namespace MyPortfolio
             else
             {
                 app.UseExceptionHandler("/Home/Error");
+                app.UseReverseProxyHttpsEnforcer();
                 app.UseHsts();
             }
 
