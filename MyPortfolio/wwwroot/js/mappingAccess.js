@@ -44,13 +44,21 @@ function generateMapChart(mapData, apiKey) {
         var options = {
             showTooltip: true,
             showInfoWindow: true,
-            zoom: 1,
-            minZoom: 1
+            zoomLevel: 2,
+            enableScrollWheel: true
         };
 
         var map = new google.visualization.Map(document.getElementById('chart_div'));
+
         map.draw(data, options);
         $('#loading').hide();
         $('#mapping').show();
+
+        google.visualization.events.addListener(map, 'ready', mapReadyHandler);
     };
 }
+
+function mapReadyHandler() {
+    $('#loading_google_maps').hide();
+}
+

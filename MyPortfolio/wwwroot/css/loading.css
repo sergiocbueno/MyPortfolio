@@ -24,3 +24,16 @@
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
   }
+
+.chart-container {
+  position: relative;
+}
+
+.loading-maps {
+  position: absolute;
+  z-index: 10;
+  left: 35%;
+  top: 48%;
+  color: #bd5d38;
+  font-weight: bold;
+}
