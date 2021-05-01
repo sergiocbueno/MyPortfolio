@@ -14,12 +14,22 @@ definitions:
             name: Execute Tests
             script:
                 - dotnet test
+        - step: &Snyk-step
+            name: Analyze vulnerabilities
+            script:
+                - pipe: synk/snyk-scan:0.2.0
+                  variables:
+                    SNYK_TOKEN: $SNYK_TOKEN
+                    LANGUAGE: ".NET"
+                    DONT_BREAK_BUILD: "True"
+                    DEBUG: "True"
 
 pipelines:
     default:
         - step: *Restore-step
         - step: *Build-step
         - step: *Test-step
+        - step: *Snyk-step
     branches:
         master:
             - step: *Restore-step
