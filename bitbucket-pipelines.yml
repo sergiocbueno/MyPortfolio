@@ -17,6 +17,7 @@ definitions:
         - step: &Snyk-step
             name: Analyze vulnerabilities
             script:
+                - cd MyPortfolio/
                 - dotnet restore
                 - pipe: snyk/snyk-scan:0.4.6
                   variables:
