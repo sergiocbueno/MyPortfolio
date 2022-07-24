@@ -13,13 +13,13 @@ namespace MyPortfolio.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly IHostingEnvironment _hostingEnvironment;
+        private readonly IHostEnvironment _hostingEnvironment;
         private readonly IMapUserService _mapUserService;
         private readonly IConfiguration _configuration;
         private readonly string _endOfGeoLocationDBPath = Path.DirectorySeparatorChar + "GeoLocationDB" + Path.DirectorySeparatorChar + "GeoLite2-City.mmdb";
         private readonly ILogger _logger;
 
-        public HomeController(IHostingEnvironment hostingEnvironment, 
+        public HomeController(IHostEnvironment hostingEnvironment, 
             IMapUserService mapUserService,
             IConfiguration configuration,
             ILogger<HomeController> logger)

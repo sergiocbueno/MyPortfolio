@@ -1,7 +1,7 @@
 ## About
 
 This is the web application of the Sérgio Bueno Portfolio.
-It was mainly implemented in ASP.NET MVC Core 2.2
+It was mainly implemented in ASP.NET MVC Core 6
 
 Check it out at http://www.sergiobueno.me/
 
@@ -9,10 +9,10 @@ Check it out at http://www.sergiobueno.me/
 
 ## Technical requirements
 
-- ASP.NET Core 2.2
+- ASP.NET Core 6
 - Docker
-    - microsoft/dotnet:2.2-sdk (image)
-    - microsoft/dotnet:2.2-aspnetcore-runtime (image)
+    - mcr.microsoft.com/dotnet/sdk:6.0 (image)
+    - mcr.microsoft.com/dotnet/aspnet:6.0 (image)
 - Heroku
 - PostgreSQL
 - Google APIs
