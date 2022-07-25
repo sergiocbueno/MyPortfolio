@@ -6,8 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using MyPortfolio.Models;
 using MyPortfolio.Services.MapUserService;
+using Microsoft.Extensions.Hosting;
 
 namespace MyPortfolio.Controllers
 {
@@ -53,12 +53,6 @@ namespace MyPortfolio.Controllers
         public IActionResult MappingAccess()
         {
             return View();
-        }
-
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
 
         #region Ajax calls

@@ -3,6 +3,11 @@ using PostgreSQLIntegration.Context;
 using MyPortfolio.Services.MapUserService;
 using MyPortfolio.Database.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,13 +25,13 @@ var app = builder.Build();
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    app.UseStatusCodePagesWithRedirects("/Home/Error");
+    app.UseStatusCodePagesWithRedirects("/Error/Handler/{0}");
     app.UseReverseProxyHttpsEnforcer();
     app.UseHsts();
 }
 else
 {
-    app.UseStatusCodePagesWithRedirects("/Home/Error");
+    app.UseStatusCodePagesWithRedirects("/Error/Handler/{0}");
     app.UseDeveloperExceptionPage();
 }
 

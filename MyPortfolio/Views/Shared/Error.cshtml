@@ -1,15 +1,20 @@
-﻿@model ErrorViewModel
-
-<section class="resume-section p-3 p-lg-5 d-flex d-column">
+﻿<section class="resume-section p-3 p-lg-5 d-flex d-column">
     <div class="my-auto">
-        <h1 class="mb-0">
-            <span class="text-primary">Error</span>
-        </h1>
+        <h2 class="mb-0">
+            <span class="text-primary">Oops..!</span>
+        </h2>
         <div class="subheading mb-5">
-            Sorry an error occurred! We are trying to solve it as soon as possible, please try again later!
+            @ViewBag.ErrorMessage
         </div>
         <div class="subheading mb-5">
-            <img src="~/img/error-occurred.gif" alt="Ops!">
+            @if (ViewBag.ErrorCode != null && ViewBag.ErrorCode == 404)
+            {
+                <img src="~/img/not-found.gif" alt="Where it is?">
+            }
+            else
+            {
+                <img src="~/img/error-occurred.gif" alt="Ops!">
+            }
         </div>
     </div>
 </section>
