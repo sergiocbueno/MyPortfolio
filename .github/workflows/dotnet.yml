@@ -1,0 +1,34 @@
+name: MyPortfolio Pipeline
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  Build-Library:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Installing dotnet core 6
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 6.0.x
+
+    - name: Verifying dotnet version
+      run: dotnet --version
+      
+    - name: Restoring MyPortfolio dependencies
+      run: cd MyPortfolio; dotnet restore --no-cache
+
+    - name: Building MyPortfolio Application
+      run: cd MyPortfolio; dotnet build --no-restore
+
+    - name: Restoring TestCoverage dependencies
+      run: cd TestCoverage; dotnet restore --no-cache
+
+    - name: Building TestCoverage Application
+      run: cd TestCoverage; dotnet build --no-restore
+
+    - name: Running TestCoverage Unit Tests
+      run: cd TestCoverage; dotnet test
