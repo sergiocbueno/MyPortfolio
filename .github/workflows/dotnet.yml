@@ -24,16 +24,16 @@ jobs:
       run: pwd
       
     - name: Restoring MyPortfolio dependencies
-      run: cd MyPortfolio; dotnet restore --no-cache
+      run: dotnet restore --no-cache
 
     - name: Building MyPortfolio Application
-      run: cd MyPortfolio; dotnet build --no-restore
+      run: dotnet build --no-restore
 
     - name: Restoring TestCoverage dependencies
-      run: cd TestCoverage; dotnet restore --no-cache
+      run: cd ../TestCoverage; dotnet restore --no-cache
 
     - name: Building TestCoverage Application
-      run: cd TestCoverage; dotnet build --no-restore
+      run: cd ../TestCoverage; dotnet build --no-restore
 
     - name: Running TestCoverage Unit Tests
-      run: cd TestCoverage; dotnet test
+      run: cd ../TestCoverage; dotnet test
