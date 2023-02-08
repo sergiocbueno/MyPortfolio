@@ -3,6 +3,8 @@ name: MyPortfolio Pipeline
 on:
   push:
     branches: [ master ]
+  pull_request:
+    branches: [ master ]
 
 jobs:
   Build-Library:
@@ -17,6 +19,9 @@ jobs:
 
     - name: Verifying dotnet version
       run: dotnet --version
+
+    - name: Location
+      run: pwd
       
     - name: Restoring MyPortfolio dependencies
       run: cd MyPortfolio; dotnet restore --no-cache
