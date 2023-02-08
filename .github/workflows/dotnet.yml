@@ -13,7 +13,7 @@ jobs:
 
     steps:
     - name: Installing dotnet core 6
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 6.0.x
 
@@ -24,7 +24,7 @@ jobs:
       run: pwd
 
     - name: Files
-      run: ls
+      run: dir
       
     - name: Restoring MyPortfolio dependencies
       run: dotnet restore --no-cache
