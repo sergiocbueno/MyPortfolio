@@ -22,6 +22,9 @@ jobs:
 
     - name: Location
       run: pwd
+
+    - name: Files
+      run: ls
       
     - name: Restoring MyPortfolio dependencies
       run: dotnet restore --no-cache
