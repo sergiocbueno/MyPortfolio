@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Cloning repository (${{ github.head_ref }})
+    - name: Cloning repository ${{ github.head_ref }}
       uses: actions/checkout@v2
       with:
         ref: ${{ github.head_ref }}
@@ -39,3 +39,7 @@ jobs:
 
     - name: Running TestCoverage Unit Tests
       run: cd TestCoverage; dotnet test
+
+    - name: Create release
+      if: github.ref == 'refs/heads/master'
+      run: echo Create release tag to trigger Google Cloud Platform continous delivery
