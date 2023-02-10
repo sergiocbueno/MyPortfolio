@@ -24,10 +24,14 @@ jobs:
         run: dotnet --version
         
       - name: Restoring MyPortfolio dependencies
-        run: cd MyPortfolio; dotnet restore --no-cache
+        run: |
+          cd MyPortfolio
+          dotnet restore --no-cache
 
       - name: Building MyPortfolio Application
-        run: cd MyPortfolio; dotnet build --no-restore
+        run: |
+          cd MyPortfolio
+          dotnet build --no-restore
 
   test:
     needs: [build]
@@ -47,19 +51,47 @@ jobs:
         run: dotnet --version
 
       - name: Restoring TestCoverage dependencies
-        run: cd TestCoverage; dotnet restore --no-cache
+        run: |
+          cd TestCoverage
+          dotnet restore --no-cache
 
       - name: Building TestCoverage Application
-        run: cd TestCoverage; dotnet build --no-restore
+        run: |
+          cd TestCoverage
+          dotnet build --no-restore
 
       - name: Running TestCoverage Unit Tests
-        run: cd TestCoverage; dotnet test
+        run: |
+          cd TestCoverage
+          dotnet test
 
   deploy:
     if: github.ref == 'refs/heads/master'
     needs: [build, test]
     runs-on: ubuntu-latest
     steps:
+      - name: Cloning repository ${{ github.head_ref }}
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Installing dotnet core 6
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 6.0.x
+
+      - name: Verifying dotnet version
+        run: dotnet --version
+
+      - name: Publish portfolio artifact
+        run: |
+          cd MyPortfolio
+          dotnet publish -c Release -o ../artifact/
+
+      - name: Compress portfolio artifact
+        run: |
+          zip -r MyPortfolio.zip artifact/
+
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
