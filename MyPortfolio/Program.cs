@@ -11,8 +11,6 @@ using Microsoft.Extensions.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
-
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 

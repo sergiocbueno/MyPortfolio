@@ -65,7 +65,7 @@ jobs:
           cd TestCoverage
           dotnet test
 
-  deploy:
+  release:
     permissions:
       contents: write
     if: github.ref == 'refs/heads/master'
