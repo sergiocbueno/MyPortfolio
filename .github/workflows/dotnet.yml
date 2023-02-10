@@ -7,39 +7,111 @@ on:
     branches: [ master ]
 
 jobs:
-  Build-Library:
-
+  build:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Cloning repository ${{ github.head_ref }}
-      uses: actions/checkout@v2
-      with:
-        ref: ${{ github.head_ref }}
+      - name: Cloning repository ${{ github.head_ref }}
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.head_ref }}
 
-    - name: Installing dotnet core 6
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: 6.0.x
+      - name: Installing dotnet core 6
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 6.0.x
 
-    - name: Verifying dotnet version
-      run: dotnet --version
-      
-    - name: Restoring MyPortfolio dependencies
-      run: cd MyPortfolio; dotnet restore --no-cache
+      - name: Verifying dotnet version
+        run: dotnet --version
+        
+      - name: Restoring MyPortfolio dependencies
+        run: |
+          cd MyPortfolio
+          dotnet restore --no-cache
 
-    - name: Building MyPortfolio Application
-      run: cd MyPortfolio; dotnet build --no-restore
+      - name: Building MyPortfolio Application
+        run: |
+          cd MyPortfolio
+          dotnet build --no-restore
 
-    - name: Restoring TestCoverage dependencies
-      run: cd TestCoverage; dotnet restore --no-cache
+  test:
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cloning repository ${{ github.head_ref }}
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.head_ref }}
 
-    - name: Building TestCoverage Application
-      run: cd TestCoverage; dotnet build --no-restore
+      - name: Installing dotnet core 6
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 6.0.x
 
-    - name: Running TestCoverage Unit Tests
-      run: cd TestCoverage; dotnet test
+      - name: Verifying dotnet version
+        run: dotnet --version
 
-    - name: Create release
-      if: github.ref == 'refs/heads/master'
-      run: echo Create release tag to trigger Google Cloud Platform continous delivery
+      - name: Restoring TestCoverage dependencies
+        run: |
+          cd TestCoverage
+          dotnet restore --no-cache
+
+      - name: Building TestCoverage Application
+        run: |
+          cd TestCoverage
+          dotnet build --no-restore
+
+      - name: Running TestCoverage Unit Tests
+        run: |
+          cd TestCoverage
+          dotnet test
+
+  deploy:
+    permissions:
+      contents: write
+    if: github.ref == 'refs/heads/master'
+    needs: [build, test]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cloning repository ${{ github.head_ref }}
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Installing dotnet core 6
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 6.0.x
+
+      - name: Verifying dotnet version
+        run: dotnet --version
+
+      - name: Publish portfolio artifact
+        run: |
+          cd MyPortfolio
+          dotnet publish -c Release -o ../artifact/
+
+      - name: Compress portfolio artifact
+        run: |
+          zip -r MyPortfolio.zip artifact/
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: release_v1.${{ github.run_number }}
+          release_name: Release v1.${{ github.run_number }}
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./MyPortfolio.zip
+          asset_name: MyPortfolio-v1.${{ github.run_number }}.zip
+          asset_content_type: application/zip

@@ -2,6 +2,10 @@
 
 This is the project application of Sergio Bueno portfolio
 
+### Build status
+
+![Build Status](https://github.com/sergiocbueno/MyPortfolio/actions/workflows/dotnet.yml/badge.svg?branch=master)
+
 ### About
 
 This is the web application of the Sérgio Bueno Portfolio.
