@@ -11,6 +11,7 @@ steps:
   script: |
     #!/usr/bin/env bash
     echo "Start replacing substitution variables"
+    cd MyPortfolio
     sed -i -e "s/<DB-HOST>/$DATABASE_HOST/g" appsettings.json
     sed -i -e "s/<DB-NAME>/$DATABASE_NAME/g" appsettings.json
     sed -i -e "s/<DB-USERNAME>/$DATABASE_USERNAME/g" appsettings.json
@@ -20,7 +21,7 @@ steps:
 
 # Build the container image
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', 'gcr.io/$PROJECT_ID/myportfolio:$COMMIT_SHA', '.']
+  args: ['build', '-t', 'gcr.io/$PROJECT_ID/myportfolio:$COMMIT_SHA', './MyPortfolio/']
 
 # Push the container image to Container Registry
 - name: 'gcr.io/cloud-builders/docker'
