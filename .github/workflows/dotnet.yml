@@ -29,19 +29,29 @@ jobs:
       - name: Building MyPortfolio Application
         run: cd MyPortfolio; dotnet build --no-restore
 
+  test:
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cloning repository ${{ github.head_ref }}
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Installing dotnet core 6
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 6.0.x
+
+      - name: Verifying dotnet version
+        run: dotnet --version
+
       - name: Restoring TestCoverage dependencies
         run: cd TestCoverage; dotnet restore --no-cache
 
       - name: Building TestCoverage Application
         run: cd TestCoverage; dotnet build --no-restore
 
-      - name: Running TestCoverage Unit Tests
-        run: cd TestCoverage; dotnet test
-
-  test:
-    needs: [build]
-    runs-on: ubuntu-latest
-    steps:
       - name: Running TestCoverage Unit Tests
         run: cd TestCoverage; dotnet test
 
