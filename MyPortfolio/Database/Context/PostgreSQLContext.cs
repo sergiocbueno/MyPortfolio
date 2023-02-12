@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using MyPortfolio.Database.Models;
+﻿using System.Reflection;
+using Microsoft.EntityFrameworkCore;
 
 namespace PostgreSQLIntegration.Context
 {
@@ -11,16 +11,7 @@ namespace PostgreSQLIntegration.Context
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<AccessMap>(entity =>
-            {
-                entity.ToTable("accessmap");
-                entity.Property(e => e.Id)
-                      .IsRequired()
-                      .HasColumnName("id");
-                entity.Property(e => e.City)
-                      .IsRequired()
-                      .HasColumnName("city");
-            });
+            modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         }
     }
 }

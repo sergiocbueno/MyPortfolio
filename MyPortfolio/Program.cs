@@ -8,38 +8,54 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
+using System;
 
-var builder = WebApplication.CreateBuilder(args);
-
-builder.Logging.ClearProviders();
-builder.Logging.AddConsole();
-
-builder.Services.AddDbContext<PostgreSQLContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("ProductionDB")), ServiceLifetime.Singleton);
-builder.Services.AddSingleton<IMapUserService, MapUserService>();
-builder.Services.AddSingleton(typeof(IBaseRepository<>), typeof(BaseRepository<>));
-
-builder.Services.AddControllersWithViews();
-
-var app = builder.Build();
-
-if (!app.Environment.IsDevelopment())
+try
 {
-    app.UseExceptionHandler("/Home/Error");
-    app.UseStatusCodePagesWithRedirects("/Error/Handler/{0}");
-    app.UseReverseProxyHttpsEnforcer();
-    app.UseHsts();
+    Console.WriteLine("Initializing MyPortfolio Application...");
+
+    var builder = WebApplication.CreateBuilder(args);
+
+    builder.Logging.ClearProviders();
+    builder.Logging.AddConsole();
+
+    builder.Services.AddDbContext<PostgreSQLContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("ProductionDB")), ServiceLifetime.Singleton);
+    builder.Services.AddSingleton<IMapUserService, MapUserService>();
+    builder.Services.AddSingleton(typeof(IBaseRepository<>), typeof(BaseRepository<>));
+
+    builder.Services.AddControllersWithViews();
+
+    var app = builder.Build();
+
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<PostgreSQLContext>();
+        db.Database.Migrate();
+    }
+
+    if (!app.Environment.IsDevelopment())
+    {
+        app.UseExceptionHandler("/Home/Error");
+        app.UseStatusCodePagesWithRedirects("/Error/Handler/{0}");
+        app.UseReverseProxyHttpsEnforcer();
+        app.UseHsts();
+    }
+    else
+    {
+        app.UseStatusCodePagesWithRedirects("/Error/Handler/{0}");
+        app.UseDeveloperExceptionPage();
+    }
+
+    app.UseHttpsRedirection();
+    app.UseStaticFiles();
+
+    app.MapControllerRoute(
+        name: "default",
+        pattern: "{controller=Home}/{action=About}/{id?}");
+
+    app.Run();
 }
-else
+catch (Exception ex)
 {
-    app.UseStatusCodePagesWithRedirects("/Error/Handler/{0}");
-    app.UseDeveloperExceptionPage();
+	Console.WriteLine($"Failed to initialize MyPortfolio Application! Error: [{ex.Message}]");
 }
-
-app.UseHttpsRedirection();
-app.UseStaticFiles();
-
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=About}/{id?}");
-
-app.Run();
