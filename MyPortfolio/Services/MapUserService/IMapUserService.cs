@@ -1,11 +1,12 @@
 ﻿using MyPortfolio.Models;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace MyPortfolio.Services.MapUserService
 {
     public interface IMapUserService
     {
-        void GetUserLocationByIpAddress(string ipAddress, string geoLocationDBPath);
-        IList<AccessMapViewModel> FindUserInsideMap(string ipAddress, string geoLocationDBPath);
+        Task SaveUserLocationByIpAddressAsync(string ipAddress);
+        Task<IList<AccessMapViewModel>> FindUserInsideMapAsync(string ipAddress);
     }
 }
