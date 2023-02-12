@@ -1,4 +1,0 @@
-CREATE TABLE AccessMap (
-    Id SERIAL PRIMARY KEY,
-    City VARCHAR(100) NOT NULL
-);

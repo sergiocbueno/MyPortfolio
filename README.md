@@ -21,16 +21,22 @@ Check it out at http://www.sergiobueno.me/
     - mcr.microsoft.com/dotnet/aspnet:6.0 (image)
 - Google Cloud Platform
 - PostgreSQL
+- Entity Framework (including Migrations for versioning)
 - Google APIs
     - Geocoding
     - Maps JavaScript
 
+### Migrate Database
+
+1. Inside MyPortfolio directory
+2. dotnet ef migrations add <MigrationName> -o Database/Migrations
+
 ### Pipelines
 
 This project contains continuous integration (CI) and continuous deployment (CD).
-Basically for all branches, after a push to the remote a pipeline is trigged which check for all libraries, build the solution, and run all unit tests.
+Basically for all branches, after a pull request is created or a push to the remote, a pipeline is trigged which check for all libraries, build the solution, and run all unit tests.
 
-*On the master branch, there is one more step called 'Deploy Application' where the pipeline automatically deploy the application in Heroku via Heroku CLI and Docker integration*
+*On the master branch, there is one more step called 'release' where the pipeline automatically creates a tag and a release, which automatically triggers an application deployment inside Google Cloud Platform environment using Docker integration*
 
 ### Test coverage
 
