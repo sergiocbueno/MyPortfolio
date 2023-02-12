@@ -20,6 +20,12 @@ try
     builder.Logging.AddConsole();
 
     builder.Services.AddDbContext<PostgreSQLContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("ProductionDB")), ServiceLifetime.Singleton);
+    
+    builder.Services.AddHttpClient<IMapUserService>(nameof(MapUserService), httpClient =>
+    {
+        httpClient.Timeout = TimeSpan.FromSeconds(10);
+    });
+    
     builder.Services.AddSingleton<IMapUserService, MapUserService>();
     builder.Services.AddSingleton(typeof(IBaseRepository<>), typeof(BaseRepository<>));
 
