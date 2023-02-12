@@ -63,7 +63,7 @@ namespace MyPortfolio.Controllers
             
             var accessMapViewModel = await _mapUserService.FindUserInsideMapAsync(ipAddress);
 
-            return Json(new { success = true, data = accessMapViewModel, apiKey = _configuration.GetConnectionString("GoogleApiKey") });
+            return Json(new { success = true, data = accessMapViewModel, apiKey = _configuration.GetValue<string>("GoogleApiKey") });
         }
 
         #endregion

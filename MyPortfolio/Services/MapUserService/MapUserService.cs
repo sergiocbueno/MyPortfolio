@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using MyPortfolio.Database.Models;
 using MyPortfolio.Database.Repositories;
 using MyPortfolio.Models;
+using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -37,30 +38,19 @@ namespace MyPortfolio.Services.MapUserService
         {
             _logger.LogInformation($"[SaveUserLocationByIpAddressAsync] received ipAddress [{ipAddress}]");
 
-            var httpClient = _httpClientFactory.CreateClient(CLIENT_FACTORY_NAME);
-            
-            var apiKey = _configuration.GetValue<string>("AbstractGeolocationApiKey");
-            var url = $"{BASE_ABSTRACT_GEOLOCATION_API}?api_key={apiKey}&ip_address={ipAddress}";
-            var httpResponse = await httpClient.GetAsync(url);
+            var cityName = await GetCityNameByIPAddressAsync(ipAddress);
 
-			if (httpResponse.StatusCode == HttpStatusCode.OK)
-			{
-                var text = await httpResponse.Content.ReadAsStringAsync();
-			}
+            if (string.IsNullOrEmpty(cityName))
+                return;
 
-            // var cityName = GetCityByIpAddress(ipAddress, geoLocationDBPath);
+            var cityInDb = _accessMapRepository.GetByExpressionMultiThread(map => map.City.Equals(cityName.ToLower())).SingleOrDefault();
 
-            // if (!string.IsNullOrWhiteSpace(cityName))
-            // {
-            //     var cityInDb = _accessMapRepository.GetByExpressionMultiThread(x => x.City.Equals(city.City.Name.ToLower())).SingleOrDefault();
+            if (cityInDb != null)
+                return;
 
-            //     if (cityInDb == null)
-            //     {
-            //         var newCity = new AccessMap { City = city.City.Name.ToLower() };
-            //         _logger.LogInformation($"[GetUserLocationByIpAddress] will save new city [{newCity.City}] in database");
-            //         _accessMapRepository.SaveMultiThreadIncludingSaveContext(newCity);
-            //     }
-            // }
+            var newCity = new AccessMap { City = cityName.ToLower() };
+            _logger.LogInformation($"[SaveUserLocationByIpAddressAsync] will save new city [{newCity.City}] in database");
+            _accessMapRepository.SaveMultiThreadIncludingSaveContext(newCity);
         }
 
         public async Task<IList<AccessMapViewModel>> FindUserInsideMapAsync(string ipAddress)
@@ -69,7 +59,7 @@ namespace MyPortfolio.Services.MapUserService
             const string itIsYou = "Hey, you found yourself, it's you here!";
             const string itIsNotYou = "Unlucky, this was another person access, try again!";
 
-            var city = string.Empty;//GetCityByIpAddress(ipAddress, geoLocationDBPath);
+            var cityName = await GetCityNameByIPAddressAsync(ipAddress);
             var allAccesses = _accessMapRepository.GetAllSingleThread();
             var accessMaps = new List<AccessMapViewModel>();
 
@@ -78,8 +68,7 @@ namespace MyPortfolio.Services.MapUserService
                 var accessMapTemp = new AccessMapViewModel
                 {
                     CityName = access.City,
-                    Message = city != null && access.City.Equals(city.ToLower()) ? itIsYou : itIsNotYou
-                    //Message = city?.City?.Name != null && access.City.Equals(city.City.Name.ToLower()) ? itIsYou : itIsNotYou
+                    Message = !string.IsNullOrEmpty(cityName) && access.City.Equals(cityName.ToLower()) ? itIsYou : itIsNotYou
                 };
 
                 accessMaps.Add(accessMapTemp);
@@ -90,6 +79,24 @@ namespace MyPortfolio.Services.MapUserService
         }
 
         #region Private Methods
+
+        private async Task<string> GetCityNameByIPAddressAsync(string ipAddress)
+        {
+            var httpClient = _httpClientFactory.CreateClient(CLIENT_FACTORY_NAME);
+            
+            var apiKey = _configuration.GetValue<string>("AbstractGeolocationApiKey");
+            var url = $"{BASE_ABSTRACT_GEOLOCATION_API}?api_key={apiKey}&ip_address={ipAddress}";
+            var httpResponse = await httpClient.GetAsync(url);
+
+			if (httpResponse.StatusCode != HttpStatusCode.OK)
+                return null;
+
+            var textResponse = await httpResponse.Content.ReadAsStringAsync();
+            dynamic jsonResponse = JObject.Parse(textResponse);
+            string cityName = jsonResponse.city;
+
+            return cityName;
+        }
 
         #endregion
     }
