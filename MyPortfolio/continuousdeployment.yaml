@@ -8,6 +8,7 @@ steps:
   - 'DATABASE_USERNAME=$_DATABASE_USERNAME'
   - 'DATABASE_PASSWORD=$_DATABASE_PASSWORD'
   - 'GOOGLE_MAPS_API_KEY=$_GOOGLE_MAPS_API_KEY'
+  - 'ABSTRACT_GEOLOCATION_API_KEY=$_ABSTRACT_GEOLOCATION_API_KEY'
   script: |
     #!/usr/bin/env bash
     echo "Start replacing substitution variables"
@@ -17,6 +18,7 @@ steps:
     sed -i -e "s/<DB-USERNAME>/$DATABASE_USERNAME/g" appsettings.json
     sed -i -e "s/<DB-PASSWORD>/$DATABASE_PASSWORD/g" appsettings.json
     sed -i -e "s/<GOOGLE-MAPS-API-KEY>/$GOOGLE_MAPS_API_KEY/g" appsettings.json
+    sed -i -e "s/<ABSTRACT-GEOLOCATION-API-KEY>/$ABSTRACT_GEOLOCATION_API_KEY/g" appsettings.json
     echo "Finished substitution variables replacements"
 
 # Build the container image

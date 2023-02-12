@@ -14,8 +14,8 @@ namespace MyPortfolio.Services.MapUserService
 {
     public class MapUserService : IMapUserService
     {
-        const string CLIENT_FACTORY_NAME = nameof(MapUserService);
-        const string BASE_ABSTRACT_GEOLOCATION_API = "https://ipgeolocation.abstractapi.com/v1/";
+        private const string CLIENT_FACTORY_NAME = nameof(MapUserService);
+        private const string BASE_ABSTRACT_GEOLOCATION_API = "https://ipgeolocation.abstractapi.com/v1/";
 
         private readonly IBaseRepository<AccessMap> _accessMapRepository;
         private readonly IHttpClientFactory _httpClientFactory;
@@ -82,6 +82,9 @@ namespace MyPortfolio.Services.MapUserService
 
         private async Task<string> GetCityNameByIPAddressAsync(string ipAddress)
         {
+            if (string.IsNullOrEmpty(ipAddress))
+                return null;
+
             var httpClient = _httpClientFactory.CreateClient(CLIENT_FACTORY_NAME);
             
             var apiKey = _configuration.GetValue<string>("AbstractGeolocationApiKey");
