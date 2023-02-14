@@ -19,12 +19,17 @@ Check it out at https://sergiobueno.me
 - Docker
     - mcr.microsoft.com/dotnet/sdk:6.0 (image)
     - mcr.microsoft.com/dotnet/aspnet:6.0 (image)
+    - postgres:14.1-alpine (image)
 - Google Cloud Platform
+    - Cloud Build
+    - Cloud Storage
+    - Cloud Run
+    - Container Registry (Images)
+    - APIs & Services
+        - Geocoding
+        - Maps JavaScript
 - PostgreSQL
 - Entity Framework (including Migrations for versioning)
-- Google APIs
-    - Geocoding
-    - Maps JavaScript
 - Abstract API (Geolocation)
 
 ### Migrate Database
@@ -32,7 +37,7 @@ Check it out at https://sergiobueno.me
 This project has been using Entity Framework as an object-database mapper for PostgreSQL. To create a change in database (data or structure) simply follow the commands below:
 
 1. Inside MyPortfolio directory
-2. dotnet ef migrations add <MigrationName> -o Database/Migrations
+2. dotnet ef migrations add *[MigrationName]* -o Database/Migrations
 
 The new migration will be automatically executed by the application in the next execution.
 
@@ -59,7 +64,7 @@ This project has only one level of test coverage: Unit tests.
     2. dotnet test
 - Publish portfolio application:
     1. Inside MyPortfolio directory
-    2. dotnet publish -c _[publish mode e.g. Release]_ -o _[destination folder]_
+    2. dotnet publish -c *[publish mode e.g. Release]* -o *[destination folder]*
 - Create local PostgreSQL (inside Container)
     1. Inside MyPortfolio directory
     2. docker-compose up -d
