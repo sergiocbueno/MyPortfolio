@@ -2,13 +2,18 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using Moq.Protected;
 using MyPortfolio.Database.Models;
 using MyPortfolio.Database.Repositories;
 using MyPortfolio.Services.MapUserService;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
+using System.Net;
 using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace TestCoverage.Service
 {
@@ -16,6 +21,8 @@ namespace TestCoverage.Service
     public class MapUserServiceTests
     {
         private const string BASE_ABSTRACT_GEOLOCATION_API = "https://ipgeolocation.abstractapi.com/v1/";
+        private const string itIsNotYou = "Unlucky, this was another person access, try again!";
+        private const string itIsYou = "Hey, you found yourself, it's you here!";
         private readonly IDictionary<string, string> _appsetttingsMock = new Dictionary<string, string> {
             {"AbstractGeolocationApiKey", "UnitTestApiKey"}
         };
@@ -38,7 +45,7 @@ namespace TestCoverage.Service
         #region Method: SaveUserLocationByIpAddressAsync 
 
         [TestMethod]
-        public void SaveUserLocationByIpAddressAsync_WhenIpAddressIsNull_ShouldNotSaveAnyCallInDatabase()
+        public void SaveUserLocationByIpAddressAsync_WhenIpAddressIsNull_ShouldNotSaveAndNoDatabaseCalls()
         {
             // Action
             _mapUserService.SaveUserLocationByIpAddressAsync(null).Wait();
@@ -50,7 +57,7 @@ namespace TestCoverage.Service
         }
 
         [TestMethod]
-        public void SaveUserLocationByIpAddressAsync_WhenIpAddressIsEmpty_ShouldNotSaveAnyCallInDatabase()
+        public void SaveUserLocationByIpAddressAsync_WhenIpAddressIsEmpty_ShouldNotSaveAndNoDatabaseCalls()
         {
             // Action
             _mapUserService.SaveUserLocationByIpAddressAsync(string.Empty).Wait();
@@ -62,21 +69,350 @@ namespace TestCoverage.Service
         }
 
         [TestMethod]
-        public void SaveUserLocationByIpAddressAsync_WhenIpAddressIsInvalid_ShouldNotSaveAnyCallInDatabase()
+        public void SaveUserLocationByIpAddressAsync_WhenCityNotFound_ShouldNotSaveAndNoDatabaseCalls()
         {
             // Setup
             var ipAddress = "127.0.0.1";
 
-            var httpClientMock = new Mock<HttpClient>();
-            _httpClientFactoryMock.Setup(x => x.CreateClient(nameof(MapUserService))).Returns(httpClientMock.Object);
+            var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
+            handlerMock
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new StringContent("{\"ip_address\":\"127.0.0.1\",\"city\":null,\"city_geoname_id\":null,\"region\":null,\"region_iso_code\":null,\"region_geoname_id\":null,\"postal_code\":null,\"country\":null,\"country_code\":null,\"country_geoname_id\":null,\"country_is_eu\":null,\"continent\":null,\"continent_code\":null,\"continent_geoname_id\":null,\"longitude\":null,\"latitude\":null,\"security\":{\"is_vpn\":false}}"),
+                })
+                .Verifiable();
+
+            _httpClientFactoryMock.Setup(x => x.CreateClient(nameof(MapUserService))).Returns(new HttpClient(handlerMock.Object));
 
             // Action
             _mapUserService.SaveUserLocationByIpAddressAsync(ipAddress).Wait();
 
             // Asserts
             _httpClientFactoryMock.Verify(x => x.CreateClient(nameof(MapUserService)), Times.Once);
+            handlerMock.Protected().Verify("SendAsync", Times.Exactly(1),
+                ItExpr.Is<HttpRequestMessage>(req => req.Method == HttpMethod.Get && req.RequestUri.ToString() == $"{BASE_ABSTRACT_GEOLOCATION_API}?api_key={_appsetttingsMock["AbstractGeolocationApiKey"]}&ip_address={ipAddress}"),
+                ItExpr.IsAny<CancellationToken>());
             _accessMapRepositoryMock.Verify(x => x.GetByExpressionMultiThread(It.IsAny<Expression<Func<AccessMap, bool>>>()), Times.Never);
             _accessMapRepositoryMock.Verify(x => x.SaveMultiThreadIncludingSaveContext(It.IsAny<AccessMap>()), Times.Never);
+        }
+
+        [TestMethod]
+        public void SaveUserLocationByIpAddressAsync_WhenResponseDifferentThanOk_ShouldNotSaveAndNoDatabaseCalls()
+        {
+            // Setup
+            var ipAddress = "185.2.144.123";
+
+            var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
+            handlerMock
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage { StatusCode = HttpStatusCode.BadRequest })
+                .Verifiable();
+
+            _httpClientFactoryMock.Setup(x => x.CreateClient(nameof(MapUserService))).Returns(new HttpClient(handlerMock.Object));
+
+            // Action
+            _mapUserService.SaveUserLocationByIpAddressAsync(ipAddress).Wait();
+
+            // Asserts
+            _httpClientFactoryMock.Verify(x => x.CreateClient(nameof(MapUserService)), Times.Once);
+            handlerMock.Protected().Verify("SendAsync", Times.Exactly(1),
+                ItExpr.Is<HttpRequestMessage>(req => req.Method == HttpMethod.Get && req.RequestUri.ToString() == $"{BASE_ABSTRACT_GEOLOCATION_API}?api_key={_appsetttingsMock["AbstractGeolocationApiKey"]}&ip_address={ipAddress}"),
+                ItExpr.IsAny<CancellationToken>());
+            _accessMapRepositoryMock.Verify(x => x.GetByExpressionMultiThread(It.IsAny<Expression<Func<AccessMap, bool>>>()), Times.Never);
+            _accessMapRepositoryMock.Verify(x => x.SaveMultiThreadIncludingSaveContext(It.IsAny<AccessMap>()), Times.Never);
+        }
+
+        [TestMethod]
+        public void SaveUserLocationByIpAddressAsync_WhenCityAlreadyExistsInDb_ShouldNotSaveDataInDatabase()
+        {
+            // Setup test environment
+            var ipAddress = "113.197.7.177";
+
+            var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
+            handlerMock
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new StringContent("{\"ip_address\":\"113.197.7.177\",\"city\":\"Melbourne\",\"city_geoname_id\":2158177,\"region\":\"Victoria\",\"region_iso_code\":\"VIC\",\"region_geoname_id\":2145234,\"postal_code\":\"3004\",\"country\":\"Australia\",\"country_code\":\"AU\",\"country_geoname_id\":2077456,\"country_is_eu\":false,\"continent\":\"Oceania\",\"continent_code\":\"OC\",\"continent_geoname_id\":6255151,\"longitude\":144.9799,\"latitude\":-37.8411,\"security\":{\"is_vpn\":false},\"timezone\":{\"name\":\"Australia/Melbourne\",\"abbreviation\":\"AEDT\",\"gmt_offset\":11,\"current_time\":\"06:46:09\",\"is_dst\":true},\"flag\":{\"emoji\":\"🇦🇺\",\"unicode\":\"U+1F1E6 U+1F1FA\",\"png\":\"https://static.abstractapi.com/country-flags/AU_flag.png\",\"svg\":\"https://static.abstractapi.com/country-flags/AU_flag.svg\"},\"currency\":{\"currency_name\":\"Australian Dollars\",\"currency_code\":\"AUD\"},\"connection\":{\"autonomous_system_number\":7575,\"autonomous_system_organization\":\"Australian Academic and Research Network AARNet\",\"connection_type\":\"Corporate\",\"isp_name\":\"Australian Academic and Research Network\",\"organization_name\":\"Australian Academic and Research Network\"}}"),
+                })
+                .Verifiable();
+
+            _httpClientFactoryMock.Setup(x => x.CreateClient(nameof(MapUserService))).Returns(new HttpClient(handlerMock.Object));
+
+            var sydneyCity = new AccessMap { Id = 5, City = "melbourne" };
+            _accessMapRepositoryMock.Setup(x => x.GetByExpressionMultiThread(It.IsAny<Expression<Func<AccessMap, bool>>>()))
+                .Returns(new List<AccessMap> { sydneyCity });
+
+            // Action
+            _mapUserService.SaveUserLocationByIpAddressAsync(ipAddress).Wait();
+
+            // Asserts
+            _httpClientFactoryMock.Verify(x => x.CreateClient(nameof(MapUserService)), Times.Once);
+            handlerMock.Protected().Verify("SendAsync", Times.Exactly(1),
+                ItExpr.Is<HttpRequestMessage>(req => req.Method == HttpMethod.Get && req.RequestUri.ToString() == $"{BASE_ABSTRACT_GEOLOCATION_API}?api_key={_appsetttingsMock["AbstractGeolocationApiKey"]}&ip_address={ipAddress}"),
+                ItExpr.IsAny<CancellationToken>());
+            _accessMapRepositoryMock.Verify(x => x.GetByExpressionMultiThread(It.IsAny<Expression<Func<AccessMap, bool>>>()), Times.Once);
+            _accessMapRepositoryMock.Verify(x => x.SaveMultiThreadIncludingSaveContext(It.IsAny<AccessMap>()), Times.Never);
+        }
+
+        [TestMethod]
+        public void SaveUserLocationByIpAddressAsync_WhenCityDoesNotExistsInDb_ShouldSaveCityInDatabase()
+        {
+            // Setup test environment
+            var ipAddress = "113.197.7.177";
+
+            var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
+            handlerMock
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new StringContent("{\"ip_address\":\"113.197.7.177\",\"city\":\"Melbourne\",\"city_geoname_id\":2158177,\"region\":\"Victoria\",\"region_iso_code\":\"VIC\",\"region_geoname_id\":2145234,\"postal_code\":\"3004\",\"country\":\"Australia\",\"country_code\":\"AU\",\"country_geoname_id\":2077456,\"country_is_eu\":false,\"continent\":\"Oceania\",\"continent_code\":\"OC\",\"continent_geoname_id\":6255151,\"longitude\":144.9799,\"latitude\":-37.8411,\"security\":{\"is_vpn\":false},\"timezone\":{\"name\":\"Australia/Melbourne\",\"abbreviation\":\"AEDT\",\"gmt_offset\":11,\"current_time\":\"06:46:09\",\"is_dst\":true},\"flag\":{\"emoji\":\"🇦🇺\",\"unicode\":\"U+1F1E6 U+1F1FA\",\"png\":\"https://static.abstractapi.com/country-flags/AU_flag.png\",\"svg\":\"https://static.abstractapi.com/country-flags/AU_flag.svg\"},\"currency\":{\"currency_name\":\"Australian Dollars\",\"currency_code\":\"AUD\"},\"connection\":{\"autonomous_system_number\":7575,\"autonomous_system_organization\":\"Australian Academic and Research Network AARNet\",\"connection_type\":\"Corporate\",\"isp_name\":\"Australian Academic and Research Network\",\"organization_name\":\"Australian Academic and Research Network\"}}"),
+                })
+                .Verifiable();
+
+            _httpClientFactoryMock.Setup(x => x.CreateClient(nameof(MapUserService))).Returns(new HttpClient(handlerMock.Object));
+
+            _accessMapRepositoryMock.Setup(x => x.GetByExpressionMultiThread(It.IsAny<Expression<Func<AccessMap, bool>>>()))
+                .Returns(new List<AccessMap>());
+
+            // Action
+            _mapUserService.SaveUserLocationByIpAddressAsync(ipAddress).Wait();
+
+            // Asserts
+            _httpClientFactoryMock.Verify(x => x.CreateClient(nameof(MapUserService)), Times.Once);
+            handlerMock.Protected().Verify("SendAsync", Times.Exactly(1),
+                ItExpr.Is<HttpRequestMessage>(req => req.Method == HttpMethod.Get && req.RequestUri.ToString() == $"{BASE_ABSTRACT_GEOLOCATION_API}?api_key={_appsetttingsMock["AbstractGeolocationApiKey"]}&ip_address={ipAddress}"),
+                ItExpr.IsAny<CancellationToken>());
+            _accessMapRepositoryMock.Verify(x => x.GetByExpressionMultiThread(It.IsAny<Expression<Func<AccessMap, bool>>>()), Times.Once);
+            _accessMapRepositoryMock.Verify(x => x.SaveMultiThreadIncludingSaveContext(It.IsAny<AccessMap>()), Times.Once);
+        }
+
+        #endregion
+
+        #region Method: FindUserInsideMap
+
+        [TestMethod]
+        public void FindUserInsideMapAsync_WhenIpAddressIsNull_ShouldReturnViewModelWithoutUserFound()
+        {
+            // Setup
+            var romeCity = new AccessMap { Id = 1, City = "rome" };
+            var torontoCity = new AccessMap { Id = 2, City = "toronto" };
+            var accessMaps = new List<AccessMap> { romeCity, torontoCity };
+            var expectedReturn = accessMaps.AsQueryable();
+
+            var mapUserServiceLoggingMock = new Mock<ILogger<MapUserService>>();
+            var accessMapRepositoryMock = new Mock<IBaseRepository<AccessMap>>();
+            _accessMapRepositoryMock.Setup(x => x.GetAllSingleThread()).Returns(expectedReturn);
+
+            // Action
+            var actualResult = _mapUserService.FindUserInsideMapAsync(null).Result;
+
+            // Asserts
+            _httpClientFactoryMock.Verify(x => x.CreateClient(It.IsAny<string>()), Times.Never);
+            _accessMapRepositoryMock.Verify(x => x.GetAllSingleThread(), Times.Once);
+            Assert.IsNotNull(actualResult);
+            Assert.AreEqual(2, actualResult.Count);
+            Assert.AreEqual(romeCity.City, actualResult[0].CityName);
+            Assert.AreEqual(itIsNotYou, actualResult[0].Message);
+            Assert.AreEqual(torontoCity.City, actualResult[1].CityName);
+            Assert.AreEqual(itIsNotYou, actualResult[1].Message);
+        }
+
+        [TestMethod]
+        public void FindUserInsideMapAsync_WhenIpAddressIsEmpty_ShouldReturnViewModelWithoutUserFound()
+        {
+            // Setup
+            var romeCity = new AccessMap { Id = 1, City = "rome" };
+            var torontoCity = new AccessMap { Id = 2, City = "toronto" };
+            var accessMaps = new List<AccessMap> { romeCity, torontoCity };
+            var expectedReturn = accessMaps.AsQueryable();
+
+            var mapUserServiceLoggingMock = new Mock<ILogger<MapUserService>>();
+            var accessMapRepositoryMock = new Mock<IBaseRepository<AccessMap>>();
+            _accessMapRepositoryMock.Setup(x => x.GetAllSingleThread()).Returns(expectedReturn);
+
+            // Action
+            var actualResult = _mapUserService.FindUserInsideMapAsync(string.Empty).Result;
+
+            // Asserts
+            _httpClientFactoryMock.Verify(x => x.CreateClient(It.IsAny<string>()), Times.Never);
+            _accessMapRepositoryMock.Verify(x => x.GetAllSingleThread(), Times.Once);
+            Assert.IsNotNull(actualResult);
+            Assert.AreEqual(2, actualResult.Count);
+            Assert.AreEqual(romeCity.City, actualResult[0].CityName);
+            Assert.AreEqual(itIsNotYou, actualResult[0].Message);
+            Assert.AreEqual(torontoCity.City, actualResult[1].CityName);
+            Assert.AreEqual(itIsNotYou, actualResult[1].Message);
+        }
+
+        [TestMethod]
+        public void FindUserInsideMapAsync_WhenResponseDifferentThanOk_ShouldReturnViewModelWithoutUserFound()
+        {
+            // Setup
+            var ipAddress = "185.2.144.123";
+
+            var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
+            handlerMock
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage { StatusCode = HttpStatusCode.BadRequest })
+                .Verifiable();
+
+            _httpClientFactoryMock.Setup(x => x.CreateClient(nameof(MapUserService))).Returns(new HttpClient(handlerMock.Object));
+
+            var romeCity = new AccessMap { Id = 1, City = "rome" };
+            var torontoCity = new AccessMap { Id = 2, City = "toronto" };
+            var accessMaps = new List<AccessMap> { romeCity, torontoCity };
+            var expectedReturn = accessMaps.AsQueryable();
+
+            _accessMapRepositoryMock.Setup(x => x.GetAllSingleThread()).Returns(expectedReturn);
+
+            // Action
+            var actualResult = _mapUserService.FindUserInsideMapAsync(ipAddress).Result;
+
+            // Asserts
+            _httpClientFactoryMock.Verify(x => x.CreateClient(nameof(MapUserService)), Times.Once);
+            handlerMock.Protected().Verify("SendAsync", Times.Exactly(1),
+                ItExpr.Is<HttpRequestMessage>(req => req.Method == HttpMethod.Get && req.RequestUri.ToString() == $"{BASE_ABSTRACT_GEOLOCATION_API}?api_key={_appsetttingsMock["AbstractGeolocationApiKey"]}&ip_address={ipAddress}"),
+                ItExpr.IsAny<CancellationToken>());
+            _accessMapRepositoryMock.Verify(x => x.GetAllSingleThread(), Times.Once);
+            Assert.IsNotNull(actualResult);
+            Assert.AreEqual(2, actualResult.Count);
+            Assert.AreEqual(romeCity.City, actualResult[0].CityName);
+            Assert.AreEqual(itIsNotYou, actualResult[0].Message);
+            Assert.AreEqual(torontoCity.City, actualResult[1].CityName);
+            Assert.AreEqual(itIsNotYou, actualResult[1].Message);
+        }
+
+        [TestMethod]
+        public void FindUserInsideMapAsync_WhenCityNotFound_ShouldReturnViewModelWithoutUserFound()
+        {
+            // Setup
+            var ipAddress = "127.0.0.1";
+
+            var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
+            handlerMock
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new StringContent("{\"ip_address\":\"127.0.0.1\",\"city\":null,\"city_geoname_id\":null,\"region\":null,\"region_iso_code\":null,\"region_geoname_id\":null,\"postal_code\":null,\"country\":null,\"country_code\":null,\"country_geoname_id\":null,\"country_is_eu\":null,\"continent\":null,\"continent_code\":null,\"continent_geoname_id\":null,\"longitude\":null,\"latitude\":null,\"security\":{\"is_vpn\":false}}"),
+                })
+                .Verifiable();
+
+            _httpClientFactoryMock.Setup(x => x.CreateClient(nameof(MapUserService))).Returns(new HttpClient(handlerMock.Object));
+
+            var romeCity = new AccessMap { Id = 1, City = "rome" };
+            var torontoCity = new AccessMap { Id = 2, City = "toronto" };
+            var accessMaps = new List<AccessMap> { romeCity, torontoCity };
+            var expectedReturn = accessMaps.AsQueryable();
+
+            _accessMapRepositoryMock.Setup(x => x.GetAllSingleThread()).Returns(expectedReturn);
+
+            // Action
+            var actualResult = _mapUserService.FindUserInsideMapAsync(ipAddress).Result;
+
+            // Asserts
+            _httpClientFactoryMock.Verify(x => x.CreateClient(nameof(MapUserService)), Times.Once);
+            handlerMock.Protected().Verify("SendAsync", Times.Exactly(1),
+                ItExpr.Is<HttpRequestMessage>(req => req.Method == HttpMethod.Get && req.RequestUri.ToString() == $"{BASE_ABSTRACT_GEOLOCATION_API}?api_key={_appsetttingsMock["AbstractGeolocationApiKey"]}&ip_address={ipAddress}"),
+                ItExpr.IsAny<CancellationToken>());
+            _accessMapRepositoryMock.Verify(x => x.GetAllSingleThread(), Times.Once);
+            Assert.IsNotNull(actualResult);
+            Assert.AreEqual(2, actualResult.Count);
+            Assert.AreEqual(romeCity.City, actualResult[0].CityName);
+            Assert.AreEqual(itIsNotYou, actualResult[0].Message);
+            Assert.AreEqual(torontoCity.City, actualResult[1].CityName);
+            Assert.AreEqual(itIsNotYou, actualResult[1].Message);
+        }
+
+        [TestMethod]
+        public void FindUserInsideMapAsync_WhenCityFoundAndItMatchesWithDatabaseData_ShouldReturnViewModelWithUserFound()
+        {
+            // Setup
+            var ipAddress = "113.197.7.177";
+
+            var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
+            handlerMock
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new StringContent("{\"ip_address\":\"113.197.7.177\",\"city\":\"Melbourne\",\"city_geoname_id\":2158177,\"region\":\"Victoria\",\"region_iso_code\":\"VIC\",\"region_geoname_id\":2145234,\"postal_code\":\"3004\",\"country\":\"Australia\",\"country_code\":\"AU\",\"country_geoname_id\":2077456,\"country_is_eu\":false,\"continent\":\"Oceania\",\"continent_code\":\"OC\",\"continent_geoname_id\":6255151,\"longitude\":144.9799,\"latitude\":-37.8411,\"security\":{\"is_vpn\":false},\"timezone\":{\"name\":\"Australia/Melbourne\",\"abbreviation\":\"AEDT\",\"gmt_offset\":11,\"current_time\":\"06:46:09\",\"is_dst\":true},\"flag\":{\"emoji\":\"🇦🇺\",\"unicode\":\"U+1F1E6 U+1F1FA\",\"png\":\"https://static.abstractapi.com/country-flags/AU_flag.png\",\"svg\":\"https://static.abstractapi.com/country-flags/AU_flag.svg\"},\"currency\":{\"currency_name\":\"Australian Dollars\",\"currency_code\":\"AUD\"},\"connection\":{\"autonomous_system_number\":7575,\"autonomous_system_organization\":\"Australian Academic and Research Network AARNet\",\"connection_type\":\"Corporate\",\"isp_name\":\"Australian Academic and Research Network\",\"organization_name\":\"Australian Academic and Research Network\"}}"),
+                })
+                .Verifiable();
+
+            _httpClientFactoryMock.Setup(x => x.CreateClient(nameof(MapUserService))).Returns(new HttpClient(handlerMock.Object));
+
+            var romeCity = new AccessMap { Id = 1, City = "rome" };
+            var melbourneCity = new AccessMap { Id = 2, City = "melbourne" };
+            var accessMaps = new List<AccessMap> { romeCity, melbourneCity };
+            var expectedReturn = accessMaps.AsQueryable();
+
+            _accessMapRepositoryMock.Setup(x => x.GetAllSingleThread()).Returns(expectedReturn);
+
+            // Action
+            var actualResult = _mapUserService.FindUserInsideMapAsync(ipAddress).Result;
+
+            // Asserts
+            _httpClientFactoryMock.Verify(x => x.CreateClient(nameof(MapUserService)), Times.Once);
+            handlerMock.Protected().Verify("SendAsync", Times.Exactly(1),
+                ItExpr.Is<HttpRequestMessage>(req => req.Method == HttpMethod.Get && req.RequestUri.ToString() == $"{BASE_ABSTRACT_GEOLOCATION_API}?api_key={_appsetttingsMock["AbstractGeolocationApiKey"]}&ip_address={ipAddress}"),
+                ItExpr.IsAny<CancellationToken>());
+            _accessMapRepositoryMock.Verify(x => x.GetAllSingleThread(), Times.Once);
+            Assert.IsNotNull(actualResult);
+            Assert.AreEqual(2, actualResult.Count);
+            Assert.AreEqual(romeCity.City, actualResult[0].CityName);
+            Assert.AreEqual(itIsNotYou, actualResult[0].Message);
+            Assert.AreEqual(melbourneCity.City, actualResult[1].CityName);
+            Assert.AreEqual(itIsYou, actualResult[1].Message);
+        }
+
+        [TestMethod]
+        public void FindUserInsideMapAsync_WhenHaveACityAndItDoesNotMatchWithDb_ShouldReturnViewModelWithoutUserFound()
+        {
+            // Setup
+            var ipAddress = "113.197.7.177";
+
+            var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
+            handlerMock
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new StringContent("{\"ip_address\":\"113.197.7.177\",\"city\":\"Melbourne\",\"city_geoname_id\":2158177,\"region\":\"Victoria\",\"region_iso_code\":\"VIC\",\"region_geoname_id\":2145234,\"postal_code\":\"3004\",\"country\":\"Australia\",\"country_code\":\"AU\",\"country_geoname_id\":2077456,\"country_is_eu\":false,\"continent\":\"Oceania\",\"continent_code\":\"OC\",\"continent_geoname_id\":6255151,\"longitude\":144.9799,\"latitude\":-37.8411,\"security\":{\"is_vpn\":false},\"timezone\":{\"name\":\"Australia/Melbourne\",\"abbreviation\":\"AEDT\",\"gmt_offset\":11,\"current_time\":\"06:46:09\",\"is_dst\":true},\"flag\":{\"emoji\":\"🇦🇺\",\"unicode\":\"U+1F1E6 U+1F1FA\",\"png\":\"https://static.abstractapi.com/country-flags/AU_flag.png\",\"svg\":\"https://static.abstractapi.com/country-flags/AU_flag.svg\"},\"currency\":{\"currency_name\":\"Australian Dollars\",\"currency_code\":\"AUD\"},\"connection\":{\"autonomous_system_number\":7575,\"autonomous_system_organization\":\"Australian Academic and Research Network AARNet\",\"connection_type\":\"Corporate\",\"isp_name\":\"Australian Academic and Research Network\",\"organization_name\":\"Australian Academic and Research Network\"}}"),
+                })
+                .Verifiable();
+
+            _httpClientFactoryMock.Setup(x => x.CreateClient(nameof(MapUserService))).Returns(new HttpClient(handlerMock.Object));
+
+            var romeCity = new AccessMap { Id = 1, City = "rome" };
+            var torontoCity = new AccessMap { Id = 2, City = "toronto" };
+            var accessMaps = new List<AccessMap> { romeCity, torontoCity };
+            var expectedReturn = accessMaps.AsQueryable();
+
+            _accessMapRepositoryMock.Setup(x => x.GetAllSingleThread()).Returns(expectedReturn);
+
+            // Action
+            var actualResult = _mapUserService.FindUserInsideMapAsync(ipAddress).Result;
+
+            // Asserts
+            _httpClientFactoryMock.Verify(x => x.CreateClient(nameof(MapUserService)), Times.Once);
+            handlerMock.Protected().Verify("SendAsync", Times.Exactly(1),
+                ItExpr.Is<HttpRequestMessage>(req => req.Method == HttpMethod.Get && req.RequestUri.ToString() == $"{BASE_ABSTRACT_GEOLOCATION_API}?api_key={_appsetttingsMock["AbstractGeolocationApiKey"]}&ip_address={ipAddress}"),
+                ItExpr.IsAny<CancellationToken>());
+            _accessMapRepositoryMock.Verify(x => x.GetAllSingleThread(), Times.Once);
+            Assert.IsNotNull(actualResult);
+            Assert.AreEqual(2, actualResult.Count);
+            Assert.AreEqual(romeCity.City, actualResult[0].CityName);
+            Assert.AreEqual(itIsNotYou, actualResult[0].Message);
+            Assert.AreEqual(torontoCity.City, actualResult[1].CityName);
+            Assert.AreEqual(itIsNotYou, actualResult[1].Message);
         }
 
         #endregion

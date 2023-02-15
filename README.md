@@ -8,35 +8,45 @@ This is the project application of Sergio Bueno portfolio
 
 ### About
 
-This is the web application of the Sérgio Bueno Portfolio.
+This is the web application of the Sergio Bueno Portfolio.
 It was mainly implemented in ASP.NET MVC Core 6
 
-Check it out at http://www.sergiobueno.me/
+Check it out at https://sergiobueno.me
 
 ### Technical requirements
 
-- ASP.NET Core 6
+- ASP.NET MVC Core 6
 - Docker
     - mcr.microsoft.com/dotnet/sdk:6.0 (image)
     - mcr.microsoft.com/dotnet/aspnet:6.0 (image)
+    - postgres:14.1-alpine (image)
 - Google Cloud Platform
+    - Cloud Build
+    - Cloud Storage
+    - Cloud Run
+    - Container Registry (Images)
+    - APIs & Services
+        - Geocoding
+        - Maps JavaScript
 - PostgreSQL
 - Entity Framework (including Migrations for versioning)
-- Google APIs
-    - Geocoding
-    - Maps JavaScript
+- Abstract API (Geolocation)
 
 ### Migrate Database
 
+This project has been using Entity Framework as an object-database mapper for PostgreSQL. To create a change in database (data or structure) simply follow the commands below:
+
 1. Inside MyPortfolio directory
-2. dotnet ef migrations add <MigrationName> -o Database/Migrations
+2. dotnet ef migrations add *[MigrationName]* -o Database/Migrations
+
+The new migration will be automatically executed by the application in the next execution.
 
 ### Pipelines
 
-This project contains continuous integration (CI) and continuous deployment (CD).
-Basically for all branches, after a pull request is created or a push to the remote, a pipeline is trigged which check for all libraries, build the solution, and run all unit tests.
+This project contains continuous integration (CI - Github) and continuous deployment (CD - Google Cloud Platform).
+Basically for all branches, after a pull request is created to master or a push directly into master, a pipeline is trigged which checks all packages, build the solution, and run all unit tests.
 
-*On the master branch, there is one more step called 'release' where the pipeline automatically creates a tag and a release, which automatically triggers an application deployment inside Google Cloud Platform environment using Docker integration*
+*On the master branch, there is one more step called 'release' where the pipeline automatically creates a tag and a release inside Github, which also automatically triggers an application deployment inside Google Cloud Platform environment using Docker integration*
 
 ### Test coverage
 
@@ -54,7 +64,7 @@ This project has only one level of test coverage: Unit tests.
     2. dotnet test
 - Publish portfolio application:
     1. Inside MyPortfolio directory
-    2. dotnet publish -c <publish mode e.g. Release> -o <destination folder>
+    2. dotnet publish -c *[publish mode e.g. Release]* -o *[destination folder]*
 - Create local PostgreSQL (inside Container)
     1. Inside MyPortfolio directory
     2. docker-compose up -d
