@@ -39,7 +39,7 @@ This project has been using Entity Framework as an object-database mapper for Po
 1. Inside MyPortfolio directory
 2. dotnet ef migrations add *[MigrationName]* -o Database/Migrations
 
-The new migration will be automatically executed by the application in the next execution.
+After version 1.30 the application initialization was optimized and the entity framework migration stopped to be initialized together with the application. A new API was created, PUT /api/migrations, which triggers now the EF migration. This new API request was included in the continuous delivery last step.
 
 ### Pipelines
 
