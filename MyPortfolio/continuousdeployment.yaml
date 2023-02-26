@@ -43,10 +43,12 @@ steps:
 images:
 - 'gcr.io/$PROJECT_ID/myportfolio:$COMMIT_SHA'
 
-# Trigger Entity Framework Migration via API
-- name: bash
-  script: |
-    #!/usr/bin/env bash
-    echo "Requesting Entity Framework Migration API..."
-    curl -X PUT https://sergiobueno.me/api/migrations
-    echo "Entity Framework Migration API finished!"
+# Trigger Entity Framework Migration API
+- name: 'curlimages/curl'
+  args:
+  - '-X'
+  - 'PUT'
+  - '-i'
+  - 'https://sergiobueno.me/api/migrations'
+  - '--max-time'
+  - '30'
