@@ -40,8 +40,8 @@ steps:
   - 'gcr.io/$PROJECT_ID/myportfolio:$COMMIT_SHA'
   - '--region'
   - '$_MYPORTFOLIO_REGION'
-images:
-- 'gcr.io/$PROJECT_ID/myportfolio:$COMMIT_SHA'
+  images:
+  - 'gcr.io/$PROJECT_ID/myportfolio:$COMMIT_SHA'
 
 # Trigger Entity Framework Migration API
 - name: 'curlimages/curl'
