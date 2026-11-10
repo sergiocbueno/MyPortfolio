@@ -9,22 +9,22 @@ This is the project application of Sergio Bueno portfolio
 ### About
 
 This is the web application of the Sergio Bueno Portfolio.
-It was mainly implemented in ASP.NET MVC Core 6
+It was mainly implemented in ASP.NET MVC Core 10
 
 Check it out at https://sergiobueno.me
 
 ### Technical requirements
 
-- ASP.NET MVC Core 6
+- ASP.NET MVC Core 10
 - Docker
-    - mcr.microsoft.com/dotnet/sdk:6.0 (image)
-    - mcr.microsoft.com/dotnet/aspnet:6.0 (image)
+    - mcr.microsoft.com/dotnet/sdk:10.0 (image)
+    - mcr.microsoft.com/dotnet/aspnet:10.0 (image)
     - postgres:14.1-alpine (image)
 - Google Cloud Platform
     - Cloud Build
-    - Cloud Storage
+    - Artifact Registry
     - Cloud Run
-    - Container Registry (Images)
+    - Cloud SQL
     - APIs & Services
         - Geocoding
         - Maps JavaScript
@@ -56,7 +56,7 @@ This project has only one level of test coverage: Unit tests.
 ### Manually commands
 
 - Resolve solution dependencies:
-    1. dotnet restore
+    1. dotnet restore --no-cache
 - Build solution:
     1. dotnet build
 - Run all solution tests:
